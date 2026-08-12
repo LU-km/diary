@@ -205,6 +205,26 @@ function bindEvents() {
 
   // 注销账号
   document.getElementById('deleteAccountBtn').addEventListener('click', deleteAccount);
+
+  // 修改密码
+  document.getElementById('passwordForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const oldPassword = document.getElementById('oldPassword').value;
+    const newPassword = document.getElementById('newPassword').value;
+    const confirmPassword = document.getElementById('confirmPassword').value;
+    if (newPassword !== confirmPassword) return toast('两次输入的新密码不一致', 'error');
+    try {
+      await API.request('/api/user/password', { method: 'PUT', body: { oldPassword, newPassword, confirmPassword } });
+      toast('密码已修改，请重新登录', 'success');
+      setTimeout(() => {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        location.href = '/login.html';
+      }, 800);
+    } catch (err) {
+      toast(err.message, 'error');
+    }
+  });
 }
 
 init();

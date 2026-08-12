@@ -74,6 +74,28 @@
       </div>
     </div>
 
+    <!-- 修改密码 -->
+    <div class="card profile-form" style="margin-top:18px">
+      <h3 class="sub-title" style="margin:0 0 12px">修改密码</h3>
+      <form id="passwordForm">
+        <div class="form-row">
+          <label>当前密码
+            <input id="oldPassword" type="password" maxlength="16" required autocomplete="current-password">
+          </label>
+        </div>
+        <div class="form-row two">
+          <label>新密码
+            <input id="newPassword" type="password" maxlength="16" required autocomplete="new-password" placeholder="8-16 位字母数字">
+          </label>
+          <label>确认新密码
+            <input id="confirmPassword" type="password" maxlength="16" required autocomplete="new-password">
+          </label>
+        </div>
+        <p class="hint" style="margin:0 0 12px">密码需 8-16 位，仅限字母和数字，且需同时包含字母和数字（管理员不受字符集限制）。修改成功后需重新登录。</p>
+        <button class="btn btn-primary" type="submit">修改密码</button>
+      </form>
+    </div>
+
     <!-- 我的日记 -->
     <div class="section-head">
       <h2 class="section-title">我的日记</h2>

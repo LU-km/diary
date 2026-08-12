@@ -11,7 +11,7 @@ const path = require('path');
 const fs = require('fs');
 const db = require('../lib/db');
 const config = require('../config');
-const { publicUser, isValidBirthday, verifyPassword } = require('../lib/utils');
+const { publicUser, isValidBirthday, verifyPassword, validatePassword, hashPassword } = require('../lib/utils');
 const { authRequired } = require('../middleware/auth');
 const { avatarUpload, isRealImage } = require('../lib/upload');
 
@@ -74,6 +74,38 @@ router.post('/avatar', authRequired, avatarUpload.single('avatar'), (req, res) =
   }
   db.update('users', req.user.id, { avatar: url });
   res.json({ code: 0, data: { url } });
+});
+
+/**
+ * 修改密码（登录用户本人，管理员同样适用）
+ * 需回传旧密码校验；新密码规则与注册一致（管理员豁免字符集限制）。
+ * 修改成功后使该账号**所有会话失效**（含当前会话），强制重新登录，防止旧会话被冒用。
+ */
+router.put('/password', authRequired, (req, res) => {
+  const { oldPassword, newPassword, confirmPassword } = req.body || {};
+  const user = req.user;
+
+  if (!verifyPassword(String(oldPassword || ''), user.salt, user.passwordHash)) {
+    return res.status(400).json({ code: 1, message: '当前密码错误' });
+  }
+  if (newPassword !== confirmPassword) {
+    return res.status(400).json({ code: 1, message: '两次输入的新密码不一致' });
+  }
+  const isAdmin = user.role === 'admin';
+  const check = validatePassword(newPassword, isAdmin);
+  if (!check.ok) return res.status(400).json({ code: 1, message: check.message });
+  if (verifyPassword(String(newPassword), user.salt, user.passwordHash)) {
+    return res.status(400).json({ code: 1, message: '新密码不能与当前密码相同' });
+  }
+
+  // 重新散列并入库（明文绝不落盘）
+  const { salt, hash } = hashPassword(newPassword);
+  db.update('users', user.id, { passwordHash: hash, salt });
+
+  // 使该账号所有会话失效（含当前会话）
+  db.filter('sessions', (s) => s.userId === user.id).forEach((s) => db.remove('sessions', s.id));
+
+  res.json({ code: 0, message: '密码已修改，请重新登录' });
 });
 
 /**

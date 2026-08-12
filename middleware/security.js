@@ -38,7 +38,15 @@ function rateLimit({ scope = 'default', windowMs = 15 * 60 * 1000, max = 10, cou
 
     // 失败次数已达上限 → 直接拒绝（不再叠加计数）
     if (rec.fail >= max) {
-      return res.status(429).json({ code: 1, message: '操作过于频繁，请稍后再试' });
+      // 带 Retry-After 头与剩余等待时间，方便客户端提示「还要等多久」
+      const remainSec = Math.max(1, Math.ceil((rec.resetAt - Date.now()) / 1000));
+      res.setHeader('Retry-After', String(remainSec));
+      const remainMin = Math.ceil(remainSec / 60);
+      return res.status(429).json({
+        code: 1,
+        message: `操作过于频繁，请 ${remainMin} 分钟后再试`,
+        retryAfterSec: remainSec,
+      });
     }
 
     // 监听本次请求结果：失败或（配置了 countSuccess 时）成功 → 计数
