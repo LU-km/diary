@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>注册 · 拾光日记</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <header class="nav-wrap"><nav class="container nav" id="nav"></nav></header>
+
+  <main class="container narrow">
+    <div class="card form-card">
+      <h2 class="form-title">注 册</h2>
+      <p class="form-sub">加入拾光日记，记录属于你的故事</p>
+      <form id="registerForm">
+        <label>用户名
+          <input id="username" type="text" required placeholder="3-20 位字母、数字、下划线或中文" autocomplete="username" maxlength="20">
+        </label>
+        <label>密码
+          <input id="password" type="password" required placeholder="6-30 位" autocomplete="new-password" maxlength="30">
+        </label>
+        <label>确认密码
+          <input id="confirmPassword" type="password" required placeholder="请再次输入密码" autocomplete="new-password" maxlength="30">
+        </label>
+        <button class="btn btn-primary btn-block" type="submit">注册并登录</button>
+      </form>
+      <p class="form-foot">已有账号？<a href="/login.html">直接登录</a></p>
+    </div>
+  </main>
+
+  <script src="/js/common.js"></script>
+  <script src="/js/register.js"></script>
+</body>
+</html>

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>日记审核 · 拾光日记后台</title>
+  <link rel="stylesheet" href="/admin/css/admin.css">
+</head>
+<body class="admin-body">
+  <aside class="sb" id="sidebar"></aside>
+
+  <div class="main">
+    <header class="topbar">
+      <span class="tb-title" id="topTitle">日记审核</span>
+      <span class="tb-right">
+        <span id="topUser"></span>
+        <a href="javascript:adminLogout()">退出登录</a>
+      </span>
+    </header>
+
+    <main class="content">
+      <!-- 状态筛选 -->
+      <div class="tabs">
+        <button class="tab active" data-status="" onclick="setTab('')">全部</button>
+        <button class="tab" data-status="pending" onclick="setTab('pending')">待审核</button>
+        <button class="tab" data-status="approved" onclick="setTab('approved')">已通过</button>
+        <button class="tab" data-status="rejected" onclick="setTab('rejected')">未通过</button>
+      </div>
+
+      <table class="table">
+        <thead>
+          <tr>
+            <th>作者</th>
+            <th>内容</th>
+            <th>图片</th>
+            <th>可见性</th>
+            <th>状态</th>
+            <th>发布时间</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+
+      <div id="pagination" class="pagination"></div>
+    </main>
+  </div>
+
+  <script src="/admin/js/admin-common.js"></script>
+  <script src="/admin/js/diaries.js"></script>
+</body>
+</html>

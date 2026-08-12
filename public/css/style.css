@@ -1,0 +1,252 @@
+/* ============================================================
+   拾光日记 · 前台样式
+   风格：清新文艺 —— 米白纸感底色、鼠尾草绿 + 豆沙粉点缀、衬线标题
+   ============================================================ */
+
+:root {
+  --bg: #f7f4ef;            /* 页面底色（米白） */
+  --card: #fffdf9;          /* 卡片底色 */
+  --ink: #44403a;           /* 主文字（暖墨色） */
+  --ink-soft: #8b857c;      /* 次级文字 */
+  --line: #ece5db;          /* 分隔线 */
+  --sage: #7d9d85;          /* 鼠尾草绿（主色） */
+  --sage-dark: #5f7f68;
+  --rose: #c99a92;          /* 豆沙粉 */
+  --rose-dark: #b07d74;
+  --gold: #c9b37e;          /* 点缀金 */
+  --serif: Georgia, 'Songti SC', 'STSong', 'SimSun', serif;
+  --sans: -apple-system, 'PingFang SC', 'Microsoft YaHei', 'Segoe UI', sans-serif;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--sans);
+  line-height: 1.7;
+}
+
+a { color: var(--sage-dark); text-decoration: none; transition: color .2s; }
+a:hover { color: var(--rose-dark); }
+
+/* ---------------- 顶部导航 ---------------- */
+.nav-wrap {
+  position: sticky; top: 0; z-index: 50;
+  background: rgba(255, 253, 249, .92);
+  backdrop-filter: blur(6px);
+  border-bottom: 1px solid var(--line);
+}
+.nav {
+  display: flex; align-items: center; justify-content: space-between;
+  height: 60px;
+}
+.nav-logo {
+  font-family: var(--serif); font-size: 20px; font-weight: 700;
+  color: var(--ink); letter-spacing: 2px;
+}
+.logo-leaf { color: var(--sage); }
+.nav-links { display: flex; align-items: center; gap: 6px; }
+.nav-links a {
+  padding: 6px 14px; border-radius: 20px;
+  color: var(--ink-soft); font-size: 14px;
+}
+.nav-links a:hover { color: var(--sage-dark); background: rgba(125, 157, 133, .12); }
+.nav-links a.active { color: #fff; background: var(--sage); }
+.nav-user {
+  margin-left: 10px; padding: 5px 14px; border-radius: 20px;
+  background: #f0ebe2; color: var(--ink-soft); font-size: 13px;
+}
+
+/* ---------------- 布局 ---------------- */
+.container { width: min(1060px, 92vw); margin: 0 auto; }
+.container.narrow { width: min(680px, 92vw); }
+
+/* ---------------- 首屏 ---------------- */
+.hero {
+  text-align: center; padding: 66px 20px 58px;
+  background: linear-gradient(160deg, #f7f2e8 0%, #e9f0e8 100%);
+  border-bottom: 1px solid var(--line);
+}
+.hero-kicker { font-size: 12px; letter-spacing: 5px; color: var(--gold); margin-bottom: 10px; }
+.hero-title { font-family: var(--serif); font-size: 52px; letter-spacing: 8px; color: var(--ink); }
+.hero-sub { margin: 14px 0 28px; color: var(--ink-soft); font-size: 16px; font-family: var(--serif); }
+
+/* ---------------- 按钮 ---------------- */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  border: none; cursor: pointer; border-radius: 24px;
+  padding: 10px 26px; font-size: 14px; font-family: var(--sans);
+  transition: all .2s;
+}
+.btn-primary { background: var(--sage); color: #fff; }
+.btn-primary:hover { background: var(--sage-dark); }
+.btn-ghost { background: transparent; color: var(--sage-dark); border: 1px solid var(--sage); }
+.btn-ghost:hover { background: rgba(125, 157, 133, .12); }
+.btn-sm { padding: 6px 16px; font-size: 13px; }
+.btn-block { width: 100%; margin-top: 8px; }
+.btn:disabled { opacity: .6; cursor: not-allowed; }
+.file-btn { position: relative; }
+
+/* ---------------- 工具条 / 标题 ---------------- */
+.toolbar { display: flex; align-items: flex-end; justify-content: space-between; margin: 34px 0 18px; }
+.section-head { display: flex; align-items: center; justify-content: space-between; margin: 34px 0 18px; }
+.section-title { font-family: var(--serif); font-size: 22px; color: var(--ink); }
+.search-box { display: flex; gap: 8px; }
+.search-box input { width: 220px; }
+
+/* ---------------- 表单控件 ---------------- */
+input[type="text"], input[type="password"], input[type="date"], select, textarea {
+  width: 100%; padding: 10px 14px;
+  border: 1px solid var(--line); border-radius: 10px; background: #fff;
+  font-size: 14px; color: var(--ink); font-family: var(--sans);
+  outline: none; transition: border-color .2s, box-shadow .2s;
+}
+input:focus, textarea:focus, select:focus {
+  border-color: var(--sage);
+  box-shadow: 0 0 0 3px rgba(125, 157, 133, .15);
+}
+
+/* ---------------- 卡片 ---------------- */
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  box-shadow: 0 2px 14px rgba(80, 70, 55, .05);
+}
+
+/* 日记卡片 */
+.feed { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+.diary-card { padding: 22px; display: flex; flex-direction: column; gap: 14px; transition: all .25s; }
+.diary-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(80, 70, 55, .10);
+}
+.card-head { display: flex; align-items: center; gap: 12px; }
+.avatar {
+  width: 42px; height: 42px; border-radius: 50%;
+  object-fit: cover; border: 1px solid var(--line); flex-shrink: 0;
+}
+.avatar.sm { width: 38px; height: 38px; }
+.avatar-lg {
+  width: 96px; height: 96px; border-radius: 50%;
+  object-fit: cover; border: 2px solid var(--line);
+}
+.card-author { display: flex; flex-direction: column; line-height: 1.4; min-width: 0; }
+.nickname { font-weight: 600; color: var(--ink); }
+.date { font-size: 12px; color: var(--ink-soft); }
+.card-content {
+  color: #5b554b; font-size: 14px; white-space: pre-wrap;
+  display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden;
+}
+.card-imgs { display: flex; gap: 8px; }
+.card-imgs .thumb { width: 88px; height: 88px; object-fit: cover; border-radius: 8px; }
+.read-more { font-size: 13px; color: var(--rose-dark); margin-top: auto; }
+.read-more:hover { color: var(--rose); }
+
+.empty { grid-column: 1 / -1; text-align: center; color: var(--ink-soft); padding: 40px 0; }
+
+/* ---------------- 分页 ---------------- */
+.pagination { display: flex; justify-content: center; gap: 8px; margin: 34px 0 50px; }
+.pagination button {
+  min-width: 34px; padding: 6px 10px;
+  border: 1px solid var(--line); background: #fff; border-radius: 8px;
+  cursor: pointer; color: var(--ink); font-size: 13px;
+}
+.pagination button.active { background: var(--sage); color: #fff; border-color: var(--sage); }
+.pagination button:disabled { opacity: .4; cursor: not-allowed; }
+
+/* ---------------- 登录 / 注册表单 ---------------- */
+.form-card { padding: 40px; margin: 48px auto; }
+.form-card label { display: block; font-size: 13px; color: var(--ink-soft); margin-bottom: 16px; }
+.form-card label input { margin-top: 6px; }
+.form-title { font-family: var(--serif); text-align: center; font-size: 26px; letter-spacing: 4px; }
+.form-sub { text-align: center; color: var(--ink-soft); font-size: 13px; margin: 8px 0 26px; }
+.form-foot { text-align: center; font-size: 13px; margin-top: 18px; color: var(--ink-soft); }
+
+/* ---------------- 写日记 ---------------- */
+.write-card { padding: 30px 34px; margin-top: 36px; }
+.diary-input { min-height: 260px; resize: vertical; line-height: 1.9; }
+.img-list { display: flex; flex-wrap: wrap; gap: 10px; margin: 14px 0; }
+.img-item { position: relative; }
+.img-item img { width: 110px; height: 110px; object-fit: cover; border-radius: 10px; }
+.img-del {
+  position: absolute; top: -6px; right: -6px;
+  width: 22px; height: 22px; border-radius: 50%; border: none;
+  background: var(--rose); color: #fff; cursor: pointer; line-height: 1; font-size: 15px;
+}
+.write-actions {
+  display: flex; justify-content: space-between; align-items: center;
+  gap: 16px; margin-bottom: 16px; flex-wrap: wrap;
+}
+.hint { font-size: 12px; color: var(--ink-soft); }
+.hint.center { text-align: center; margin-top: 12px; }
+.visibility { display: flex; gap: 16px; }
+.radio { display: flex; align-items: center; gap: 6px; font-size: 14px; cursor: pointer; }
+.radio input { width: auto; }
+
+/* ---------------- 个人中心 ---------------- */
+.profile-layout { display: grid; grid-template-columns: 280px 1fr; gap: 20px; }
+.profile-card {
+  padding: 34px; text-align: center;
+  display: flex; flex-direction: column; align-items: center; gap: 14px;
+}
+.profile-card h3 { font-family: var(--serif); font-size: 20px; }
+.profile-form { padding: 30px 34px; }
+.form-row { margin-bottom: 16px; }
+.form-row label { display: block; font-size: 13px; color: var(--ink-soft); }
+.form-row label input, .form-row label select { margin-top: 6px; }
+.form-row.two { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.zodiac-box {
+  font-size: 14px; color: var(--sage-dark); align-self: end; padding-bottom: 10px;
+}
+
+/* 我的日记（个人中心） */
+.mine-card { padding: 18px 22px; display: flex; flex-direction: column; gap: 10px; }
+.mine-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.mine-meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.mine-content {
+  color: #5b554b; font-size: 14px; white-space: pre-wrap;
+  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+}
+.mine-actions { display: flex; gap: 8px; }
+
+/* ---------------- 徽章 / 状态 ---------------- */
+.badge { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 12px; }
+.badge-pending { background: #f6ecd2; color: #a3812f; }
+.badge-approved { background: #e3efe4; color: #4f7d57; }
+.badge-rejected { background: #f6e0dc; color: #b05a4a; }
+.badge-private { background: #e7ecf5; color: #5a7296; }
+.reject-reason {
+  margin-left: 8px; font-size: 12px; color: #b05a4a;
+  cursor: help; border-bottom: 1px dashed #b05a4a;
+}
+
+/* ---------------- 日记详情 ---------------- */
+.diary-detail { padding: 36px 40px; margin: 36px 0 60px; }
+.detail-head {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  gap: 16px; margin-bottom: 20px;
+}
+.detail-content {
+  white-space: pre-wrap; font-size: 15px; line-height: 2;
+  color: #4a443b; margin-bottom: 22px;
+}
+.detail-imgs { display: flex; flex-direction: column; gap: 12px; margin-bottom: 22px; }
+.detail-imgs img { max-width: 100%; border-radius: 10px; }
+.detail-actions { display: flex; gap: 10px; flex-shrink: 0; }
+
+/* ---------------- 页脚 ---------------- */
+.footer { text-align: center; padding: 28px 0 40px; color: var(--ink-soft); font-size: 13px; }
+
+/* ---------------- Toast 提示 ---------------- */
+.toast {
+  position: fixed; top: 24px; left: 50%;
+  transform: translate(-50%, -24px);
+  background: rgba(60, 60, 55, .92); color: #fff;
+  padding: 10px 22px; border-radius: 22px; font-size: 14px;
+  z-index: 999; opacity: 0; pointer-events: none; transition: all .3s;
+}
+.toast.show { opacity: 1; transform: translate(-50%, 0); }
+.toast.error { background: rgba(176, 90, 74, .95); }
+.toast.success { background: rgba(79, 125, 87, .95); }

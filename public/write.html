@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>写日记 · 拾光日记</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <header class="nav-wrap"><nav class="container nav" id="nav"></nav></header>
+
+  <main class="container narrow">
+    <div class="card write-card">
+      <h2 class="form-title" id="writeTitle">写日记</h2>
+      <p class="form-sub" style="margin-bottom:22px">此刻的心事，值得被认真写下</p>
+
+      <textarea id="content" class="diary-input" placeholder="今天发生了什么，想对谁说什么…" maxlength="10000"></textarea>
+
+      <!-- 已上传图片预览 -->
+      <div id="imgList" class="img-list"></div>
+
+      <div class="write-actions">
+        <div>
+          <label class="btn btn-ghost btn-sm file-btn">＋ 添加图片
+            <input type="file" id="imgFile" accept="image/*" multiple hidden>
+          </label>
+          <span class="hint">支持 jpg / png / gif / webp，单张 ≤ 5MB</span>
+        </div>
+        <div class="visibility">
+          <label class="radio"><input type="radio" name="visibility" value="public" checked> 公开</label>
+          <label class="radio"><input type="radio" name="visibility" value="private"> 仅自己可见</label>
+        </div>
+      </div>
+
+      <button id="submitBtn" class="btn btn-primary btn-block">发布日记</button>
+      <p class="hint center">公开日记将提交管理员审核，通过后展示在广场；「仅自己可见」仅作者本人可见。</p>
+    </div>
+  </main>
+
+  <script src="/js/common.js"></script>
+  <script src="/js/write.js"></script>
+</body>
+</html>

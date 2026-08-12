@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>个人中心 · 拾光日记</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <header class="nav-wrap"><nav class="container nav" id="nav"></nav></header>
+
+  <main class="container">
+    <h2 class="section-title">个人资料</h2>
+
+    <!-- 个人资料中心：左头像 + 右表单 -->
+    <div class="profile-layout">
+      <div class="card profile-card">
+        <img id="avatarPreview" class="avatar-lg" alt="我的头像">
+        <h3 id="nicknameTitle">—</h3>
+        <label class="btn btn-ghost btn-sm file-btn">更换头像
+          <input type="file" id="avatarFile" accept="image/*" hidden>
+        </label>
+        <p class="hint">支持 jpg / png / gif / webp，≤ 2MB</p>
+      </div>
+
+      <div class="card profile-form">
+        <form id="profileForm">
+          <div class="form-row">
+            <label>昵称
+              <input id="nickname" type="text" maxlength="20" required placeholder="怎么称呼你">
+            </label>
+          </div>
+          <div class="form-row two">
+            <label>居住城市
+              <input id="city" type="text" maxlength="30" placeholder="如：杭州">
+            </label>
+            <label>性别
+              <select id="gender">
+                <option value="">保密</option>
+                <option value="男">男</option>
+                <option value="女">女</option>
+              </select>
+            </label>
+          </div>
+          <div class="form-row">
+            <label>个性签名
+              <input id="signature" type="text" maxlength="100" placeholder="一句想说的话…">
+            </label>
+          </div>
+          <div class="form-row two">
+            <label>生日
+              <input id="birthday" type="date">
+            </label>
+            <div class="zodiac-box">星座：<span id="zodiac">—</span></div>
+          </div>
+          <button class="btn btn-primary" type="submit">保存资料</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- 我的日记 -->
+    <div class="section-head">
+      <h2 class="section-title">我的日记</h2>
+      <a class="btn btn-ghost btn-sm" href="/write.html">＋ 写一篇</a>
+    </div>
+    <div id="myDiaries" class="feed"><p class="empty">加载中…</p></div>
+  </main>
+
+  <footer class="footer">© 2026 拾光日记 · 愿你被世界温柔以待</footer>
+
+  <script src="/js/common.js"></script>
+  <script src="/js/profile.js"></script>
+</body>
+</html>

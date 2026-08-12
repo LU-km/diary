@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>拾光日记 · 把心事写进文字里</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <!-- 顶部导航 -->
+  <header class="nav-wrap"><nav class="container nav" id="nav"></nav></header>
+
+  <!-- 首屏横幅 -->
+  <section class="hero">
+    <p class="hero-kicker">A SERENE DIARY COMMUNITY</p>
+    <h1 class="hero-title">拾光日记</h1>
+    <p class="hero-sub">「把平凡的日子，安放在温柔的文字里」</p>
+    <a class="btn btn-primary" href="/write.html">✎ 写一篇日记</a>
+  </section>
+
+  <!-- 日记广场 -->
+  <main class="container">
+    <div class="toolbar">
+      <h2 class="section-title">日记广场</h2>
+      <div class="search-box">
+        <input id="keyword" type="text" placeholder="搜索日记关键词…" maxlength="50">
+        <button id="searchBtn" class="btn btn-primary btn-sm">搜索</button>
+      </div>
+    </div>
+    <div id="feed" class="feed"><p class="empty">加载中…</p></div>
+    <div id="pagination" class="pagination"></div>
+  </main>
+
+  <footer class="footer">© 2026 拾光日记 · 愿你被世界温柔以待</footer>
+
+  <script src="/js/common.js"></script>
+  <script src="/js/index.js"></script>
+</body>
+</html>

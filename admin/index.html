@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>仪表盘 · 拾光日记后台</title>
+  <link rel="stylesheet" href="/admin/css/admin.css">
+</head>
+<body class="admin-body">
+  <!-- 左侧导航栏 -->
+  <aside class="sb" id="sidebar"></aside>
+
+  <div class="main">
+    <!-- 顶栏 -->
+    <header class="topbar">
+      <span class="tb-title" id="topTitle">仪表盘</span>
+      <span class="tb-right">
+        <span id="topUser"></span>
+        <a href="javascript:adminLogout()">退出登录</a>
+      </span>
+    </header>
+
+    <main class="content">
+      <!-- 统计卡片 -->
+      <div class="stat-grid" id="stats"></div>
+
+      <!-- 最近动态 -->
+      <div class="two-col">
+        <div class="card">
+          <h3>最近注册</h3>
+          <ul class="mini-list" id="recentUsers"></ul>
+        </div>
+        <div class="card">
+          <h3>最新日记</h3>
+          <ul class="mini-list" id="recentDiaries"></ul>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="/admin/js/admin-common.js"></script>
+  <script src="/admin/js/index.js"></script>
+</body>
+</html>

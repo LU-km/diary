@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>登录 · 拾光日记</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <header class="nav-wrap"><nav class="container nav" id="nav"></nav></header>
+
+  <main class="container narrow">
+    <div class="card form-card">
+      <h2 class="form-title">登 录</h2>
+      <p class="form-sub">欢迎回到拾光日记</p>
+      <form id="loginForm">
+        <label>用户名
+          <input id="username" type="text" required placeholder="请输入用户名" autocomplete="username" maxlength="20">
+        </label>
+        <label>密码
+          <input id="password" type="password" required placeholder="请输入密码" autocomplete="current-password" maxlength="30">
+        </label>
+        <button class="btn btn-primary btn-block" type="submit">登 录</button>
+      </form>
+      <p class="form-foot">还没有账号？<a href="/register.html">立即注册</a></p>
+    </div>
+  </main>
+
+  <script src="/js/common.js"></script>
+  <script src="/js/login.js"></script>
+</body>
+</html>
