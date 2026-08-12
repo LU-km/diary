@@ -1,5 +1,5 @@
 /**
- * index.js — 日记广场：加载公开日记、关键词搜索、分页
+ * index.js — 日记广场：加载公开日记、关键词搜索、分页、互动
  */
 let page = 1;
 const LIMIT = 9;
@@ -22,11 +22,13 @@ function renderFeed(data) {
     feed.innerHTML = '<p class="empty">还没有公开的日记，去写下第一篇吧 ✎</p>';
   } else {
     feed.innerHTML = data.list.map(cardHtml).join('');
+    // 绑定点赞 / 收藏 / 转发
+    wireInteractions(feed);
   }
   renderPagination(data);
 }
 
-/** 单张日记卡片 */
+/** 单张日记卡片（含地点与互动） */
 function cardHtml(d) {
   const content = escapeHtml(d.content);
   const preview = content.length > 120 ? content.slice(0, 120) + '…' : content;
@@ -43,6 +45,10 @@ function cardHtml(d) {
     </div>
     <p class="card-content">${preview}</p>
     ${imgs ? `<div class="card-imgs">${imgs}</div>` : ''}
+    <div class="card-foot">
+      ${locationBadge(d)}
+    </div>
+    ${interactButtons(d)}
     <a class="read-more" href="/diary.html?id=${d.id}">阅读全文 →</a>
   </article>`;
 }

@@ -8,7 +8,7 @@ renderTopbar('仪表盘');
 async function load() {
   const s = await AdminAPI.request('/api/admin/stats');
 
-  // 统计卡片
+  // 统计卡片（v1.0.00 新增互动统计）
   document.getElementById('stats').innerHTML = [
     { label: '注册用户', num: s.users },
     { label: '日记总数', num: s.diaries },
@@ -16,6 +16,9 @@ async function load() {
     { label: '已公开', num: s.approved },
     { label: '仅自己可见', num: s.private },
     { label: '未通过', num: s.rejected },
+    { label: '点赞', num: s.likes },
+    { label: '收藏', num: s.favorites },
+    { label: '转发', num: s.forwards },
   ].map((x) => `
     <div class="stat-card ${x.warn ? 'warn' : ''}">
       <div class="num">${x.num}</div>

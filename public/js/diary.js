@@ -1,6 +1,7 @@
 /**
  * diary.js — 日记详情页
- * 展示正文 / 配图 / 作者信息；作者本人或管理员可删除。
+ * 展示正文 / 配图 / 发布地点地图 / 作者信息 / 发布时间 / 互动；
+ * 作者本人或管理员可删除。
  */
 const id = new URLSearchParams(location.search).get('id');
 
@@ -31,10 +32,15 @@ function render(d) {
   let actions = '';
   if (isOwner) {
     actions = `<a class="btn btn-ghost btn-sm" href="/write.html?id=${d.id}">编辑</a>` +
-      `<button class="btn btn-ghost btn-sm" style="color:#b05a4a;border-color:#e0b5ab" onclick="del()">删除</button>`;
+      `<button class="btn btn-ghost btn-sm" style="color:#c97060;border-color:#e0b5ab" onclick="del()">删除</button>`;
   } else if (isAdmin) {
-    actions = `<button class="btn btn-ghost btn-sm" style="color:#b05a4a;border-color:#e0b5ab" onclick="del()">删除</button>`;
+    actions = `<button class="btn btn-ghost btn-sm" style="color:#c97060;border-color:#e0b5ab" onclick="del()">删除</button>`;
   }
+
+  // 发布地点小地图
+  const mapHtml = d.location
+    ? `<div class="detail-map"><div class="map-box" id="detailMap"></div></div>`
+    : '';
 
   document.getElementById('diaryBox').innerHTML = `
     <div class="detail-head">
@@ -42,15 +48,34 @@ function render(d) {
         <img class="avatar" src="${d.author ? d.author.avatar : ''}" alt="作者头像">
         <div class="card-author">
           <span class="nickname">${d.author ? escapeHtml(d.author.nickname) : '未知用户'}</span>
-          <span class="date">${fmtTime(d.createdAt)} · ${badges}</span>
+          <span class="date">发布时间：${fmtTime(d.createdAt)} · ${badges}</span>
         </div>
       </div>
       ${actions ? `<div class="detail-actions">${actions}</div>` : ''}
     </div>
-    <p class="detail-content">${escapeHtml(d.content)}</p>
+    ${locationBadge(d)}
+    <p class="detail-content" style="margin-top:14px">${escapeHtml(d.content)}</p>
     ${(d.images || []).length
       ? `<div class="detail-imgs">${(d.images || []).map((u) => `<img src="${u}" alt="日记配图">`).join('')}</div>`
-      : ''}`;
+      : ''}
+    ${mapHtml}
+    ${interactButtons(d)}
+  `;
+
+  wireInteractions(document.getElementById('diaryBox'));
+  if (d.location) initDetailMap(d.location);
+}
+
+/** 详情页小地图（只读展示，不可拖拽选点） */
+function initDetailMap(loc) {
+  if (typeof L === 'undefined') return;
+  const box = document.getElementById('detailMap');
+  const m = L.map(box, { scrollWheelZoom: false }).setView([loc.lat, loc.lng], 13);
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+  }).addTo(m);
+  L.marker([loc.lat, loc.lng]).addTo(m).bindPopup(escapeHtml(loc.name)).openPopup();
 }
 
 async function del() {

@@ -1,18 +1,19 @@
 /* ============================================================
-   拾光日记 · 管理后台样式
-   风格：深墨绿侧栏 + 米白内容区，延续清新文艺气质
+   栖桉集 · 管理后台样式（v1.0.00）
+   风格：深蓝侧栏 + 淡蓝主色 + 米白内容区，延续清新文艺气质
    ============================================================ */
 
 :root {
-  --ink: #3d3a35;
-  --ink-soft: #8b857c;
-  --line: #ece5db;
-  --bg: #f7f4ef;
-  --deep: #3d5244;              /* 侧栏深绿 */
-  --sage: #7d9d85;
-  --sage-dark: #5f7f68;
-  --rose: #c99a92;
-  --card: #fffdf9;
+  --ink: #3d4a55;
+  --ink-soft: #7e8b98;
+  --line: #e3ecf4;
+  --bg: #f6f9fc;
+  --deep: #3a5a78;              /* 侧栏深蓝 */
+  --blue: #6fa8d6;
+  --blue-dark: #4e87b5;
+  --blue-soft: #cfe3f3;
+  --card: #ffffff;
+  --danger: #c97060;
   --serif: Georgia, 'Songti SC', 'STSong', 'SimSun', serif;
   --sans: -apple-system, 'PingFang SC', 'Microsoft YaHei', 'Segoe UI', sans-serif;
 }
@@ -28,25 +29,25 @@ body.admin-body {
 /* ---------------- 左侧导航 ---------------- */
 .sb {
   width: 220px; position: fixed; top: 0; bottom: 0; left: 0;
-  background: linear-gradient(180deg, var(--deep), #34453a);
-  color: #dfe8df; display: flex; flex-direction: column;
+  background: linear-gradient(180deg, var(--deep), #2f4a64);
+  color: #dfe8f0; display: flex; flex-direction: column;
 }
 .sb-brand {
   padding: 24px 22px; font-family: var(--serif); font-size: 19px;
   letter-spacing: 2px; border-bottom: 1px solid rgba(255, 255, 255, .12);
 }
 .sb-brand span {
-  display: block; font-size: 11px; color: #a9bda9;
+  display: block; font-size: 11px; color: #a9c1d6;
   margin-top: 4px; letter-spacing: 6px;
 }
 .sb-nav { padding: 16px 10px; display: flex; flex-direction: column; gap: 4px; }
 .sb-nav a {
   padding: 10px 14px; border-radius: 10px;
-  color: #c9d6c9; font-size: 14px; text-decoration: none;
+  color: #c6d6e4; font-size: 14px; text-decoration: none;
   display: flex; gap: 10px; align-items: center;
 }
 .sb-nav a:hover { background: rgba(255, 255, 255, .08); color: #fff; }
-.sb-nav a.active { background: var(--sage); color: #fff; }
+.sb-nav a.active { background: var(--blue); color: #fff; }
 
 /* ---------------- 主内容区 ---------------- */
 .main { margin-left: 220px; flex: 1; min-width: 0; }
@@ -57,23 +58,25 @@ body.admin-body {
 }
 .tb-title { font-family: var(--serif); font-size: 17px; }
 .tb-right { display: flex; align-items: center; gap: 16px; font-size: 13px; color: var(--ink-soft); }
-.tb-right a { color: var(--rose); cursor: pointer; text-decoration: none; }
-.tb-right a:hover { color: var(--rose-dark); }
+.tb-right a { color: var(--blue-dark); cursor: pointer; text-decoration: none; }
+.tb-right a:hover { color: var(--danger); }
+.tb-right a.danger { color: var(--danger); }
+.tb-right a.danger:hover { text-decoration: underline; }
 
 .content { padding: 26px 28px 60px; }
 
 /* ---------------- 统计卡片 ---------------- */
 .stat-grid {
-  display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
   gap: 16px; margin-bottom: 26px;
 }
 .stat-card {
   background: var(--card); border: 1px solid var(--line);
   border-radius: 12px; padding: 20px;
 }
-.stat-card .num { font-family: var(--serif); font-size: 30px; color: var(--sage-dark); }
+.stat-card .num { font-family: var(--serif); font-size: 30px; color: var(--blue-dark); }
 .stat-card .label { font-size: 13px; color: var(--ink-soft); margin-top: 4px; }
-.stat-card.warn { border-color: #e8c9c2; }
+.stat-card.warn { border-color: #f0d0c8; }
 .stat-card.warn .num { color: #b05a4a; }
 
 .card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 20px; }
@@ -98,18 +101,18 @@ body.admin-body {
   border: 1px solid var(--line); border-radius: 8px;
   background: #fff; font-size: 13px; outline: none;
 }
-.search-box input:focus { border-color: var(--sage); }
+.search-box input:focus { border-color: var(--blue); }
 
 .btn {
   border: none; cursor: pointer; border-radius: 8px;
   padding: 6px 14px; font-size: 13px;
-  background: var(--sage); color: #fff; transition: all .2s;
+  background: var(--blue); color: #fff; transition: all .2s;
 }
-.btn:hover { background: var(--sage-dark); }
-.btn.gray { background: #e6dfd4; color: #6b645a; }
-.btn.gray:hover { background: #d8d0c2; }
-.btn.danger { background: #e8c9c2; color: #a04a3a; }
-.btn.danger:hover { background: #ddb2a8; }
+.btn:hover { background: var(--blue-dark); }
+.btn.gray { background: #e6edf4; color: #5a6b7a; }
+.btn.gray:hover { background: #d6e2ed; }
+.btn.danger { background: #f0d0c8; color: #a04a3a; }
+.btn.danger:hover { background: #e6bcb0; }
 .btn.small { padding: 4px 10px; font-size: 12px; }
 
 /* ---------------- 表格 ---------------- */
@@ -121,8 +124,8 @@ body.admin-body {
   text-align: left; padding: 12px 14px;
   font-size: 13px; border-bottom: 1px solid var(--line);
 }
-.table th { background: #f4efe6; color: var(--ink-soft); font-weight: 600; }
-.table tr:hover td { background: #fbf7f0; }
+.table th { background: #f0f6fc; color: var(--ink-soft); font-weight: 600; }
+.table tr:hover td { background: #f8fbfe; }
 .table .cell-user { display: flex; align-items: center; gap: 10px; }
 .table img.avatar { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; }
 .table .content-preview {
@@ -138,15 +141,15 @@ body.admin-body {
   background: #fff; border: 1px solid var(--line);
   cursor: pointer; font-size: 13px; color: var(--ink-soft);
 }
-.tabs .tab.active { background: var(--sage); color: #fff; border-color: var(--sage); }
+.tabs .tab.active { background: var(--blue); color: #fff; border-color: var(--blue); }
 
 /* ---------------- 徽章 ---------------- */
 .badge { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 12px; }
 .badge-pending { background: #f6ecd2; color: #a3812f; }
-.badge-approved { background: #e3efe4; color: #4f7d57; }
+.badge-approved { background: #dcecf9; color: #3e6f96; }
 .badge-rejected { background: #f6e0dc; color: #b05a4a; }
 .badge-private { background: #e7ecf5; color: #5a7296; }
-.badge-disabled { background: #eee; color: #8a8378; }
+.badge-disabled { background: #eef1f4; color: #8a93a0; }
 .reject-reason {
   display: block; font-size: 11px; color: #b05a4a; margin-top: 2px;
 }
@@ -158,19 +161,19 @@ body.admin-body {
   border: 1px solid var(--line); background: #fff;
   border-radius: 8px; cursor: pointer; font-size: 13px; color: var(--ink);
 }
-.pagination button.active { background: var(--sage); color: #fff; border-color: var(--sage); }
+.pagination button.active { background: var(--blue); color: #fff; border-color: var(--blue); }
 .pagination button:disabled { opacity: .4; cursor: not-allowed; }
 
 /* ---------------- 后台登录页 ---------------- */
 .admin-login-body {
-  background: linear-gradient(160deg, #eef2ea, #f6efe4);
+  background: linear-gradient(160deg, #eef4fb, #f6f1e6);
   display: flex; align-items: center; justify-content: center;
   min-height: 100vh;
 }
 .admin-login-card {
   background: var(--card); border: 1px solid var(--line);
   border-radius: 16px; padding: 44px 48px; width: 380px;
-  box-shadow: 0 8px 30px rgba(60, 70, 60, .12);
+  box-shadow: 0 8px 30px rgba(60, 80, 110, .12);
 }
 .admin-login-card .title {
   font-family: var(--serif); font-size: 24px;
@@ -186,17 +189,17 @@ body.admin-body {
   border: 1px solid var(--line); border-radius: 8px; outline: none;
   font-size: 14px; color: var(--ink);
 }
-.admin-login-card label input:focus { border-color: var(--sage); }
+.admin-login-card label input:focus { border-color: var(--blue); }
 .admin-login-card .btn { width: 100%; padding: 10px; margin-top: 4px; border-radius: 20px; }
 
 /* ---------------- Toast ---------------- */
 .toast {
   position: fixed; top: 24px; left: 50%;
   transform: translate(-50%, -24px);
-  background: rgba(60, 60, 55, .92); color: #fff;
+  background: rgba(60, 70, 80, .92); color: #fff;
   padding: 10px 22px; border-radius: 22px; font-size: 14px;
   z-index: 999; opacity: 0; pointer-events: none; transition: all .3s;
 }
 .toast.show { opacity: 1; transform: translate(-50%, 0); }
 .toast.error { background: rgba(176, 90, 74, .95); }
-.toast.success { background: rgba(79, 125, 87, .95); }
+.toast.success { background: rgba(78, 135, 181, .95); }

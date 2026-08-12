@@ -1,6 +1,6 @@
 @echo off
 rem ============================================
-rem  Shiguang Diary - one-click launcher (Windows)
+rem  Qian-An-Ji (Qian An Ji) - one-click launcher
 rem  Double-click this file to start the server.
 rem ============================================
 cd /d %~dp0

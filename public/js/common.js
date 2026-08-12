@@ -1,7 +1,8 @@
 /**
  * common.js — 前台公共工具
- * API 请求封装、登录态管理、导航渲染、通用工具函数。
+ * API 请求封装、登录态管理、导航渲染、点赞/转发/收藏交互、地点格式化等。
  */
+const SITE_NAME = '栖桉集';
 
 /* ---------------- API 请求封装 ---------------- */
 const API = {
@@ -94,6 +95,80 @@ const STATUS_META = {
   rejected: { text: '未通过', cls: 'badge-rejected' },
 };
 
+/* ---------------- 发布地点 ---------------- */
+
+/** 日记地点 → 展示文案（无地点返回空字符串） */
+function locationText(d) {
+  return d && d.location && d.location.name ? d.location.name : '';
+}
+/** 地点徽章 HTML */
+function locationBadge(d) {
+  const t = locationText(d);
+  return t ? `<span class="loc">📍 ${escapeHtml(t)}</span>` : '';
+}
+
+/* ---------------- 点赞 / 收藏 / 转发 ---------------- */
+
+/** 互动按钮组 HTML（data-act: like/favorite/forward） */
+function interactButtons(d) {
+  return `<div class="acts">
+    <button class="act ${d.likedByMe ? 'on' : ''}" data-act="like" data-id="${d.id}" title="点赞">
+      <span class="ic">♥</span><span class="cnt">${d.likeCount || 0}</span>
+    </button>
+    <button class="act ${d.favoritedByMe ? 'on' : ''}" data-act="favorite" data-id="${d.id}" title="收藏">
+      <span class="ic">★</span><span class="cnt">${d.favoriteCount || 0}</span>
+    </button>
+    <button class="act ${d.forwardedByMe ? 'on' : ''}" data-act="forward" data-id="${d.id}" title="转发分享">
+      <span class="ic">↗</span><span class="cnt">${d.forwardCount || 0}</span>
+    </button>
+  </div>`;
+}
+
+/** 发起互动请求 */
+async function doInteract(action, id) {
+  if (!getToken()) {
+    toast('请先登录', 'error');
+    setTimeout(() => (location.href = '/login.html'), 600);
+    return null;
+  }
+  return API.request(`/api/diaries/${id}/${action}`, { method: 'POST' });
+}
+
+/**
+ * 为某个容器内的互动按钮绑定点击事件（事件代理）。
+ * @param {HTMLElement} scope 容器
+ * @param {Function} [onChanged] 收藏状态变化后的回调（用于个人中心收藏列表移除）
+ */
+function wireInteractions(scope, onChanged) {
+  if (!scope) return;
+  scope.querySelectorAll('[data-act]').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      const id = btn.dataset.id;
+      const act = btn.dataset.act;
+      try {
+        const data = await doInteract(act, id);
+        if (!data) return; // 未登录，已跳转
+        if (act === 'forward') {
+          // 转发：复制分享链接 + 计次
+          const link = location.origin + '/diary.html?id=' + id;
+          try { await navigator.clipboard.writeText(link); toast('已转发，链接已复制', 'success'); }
+          catch { toast('已转发', 'success'); }
+        } else {
+          const active = act === 'like' ? data.liked : data.favorited;
+          btn.classList.toggle('on', !!active);
+          const cnt = btn.querySelector('.cnt');
+          if (cnt) cnt.textContent = data.count;
+          toast(act === 'like' ? (active ? '已点赞' : '已取消点赞')
+                : (active ? '已收藏' : '已取消收藏'), 'success');
+          if (act === 'favorite' && onChanged) onChanged(data);
+        }
+      } catch (err) {
+        toast(err.message, 'error');
+      }
+    });
+  });
+}
+
 /* ---------------- Toast 提示 ---------------- */
 let toastTimer = null;
 function toast(msg, type = 'info') {
@@ -124,7 +199,7 @@ function renderNav(active = '') {
       `<a href="/register.html" class="${active === 'register' ? 'active' : ''}">注册</a>`;
 
   nav.innerHTML =
-    `<a class="nav-logo" href="/"><span class="logo-leaf">✿</span> 拾光日记</a>` +
+    `<a class="nav-logo" href="/"><span class="logo-leaf">✿</span> ${SITE_NAME}</a>` +
     `<div class="nav-links">${links}</div>`;
 
   const logoutBtn = document.getElementById('navLogout');

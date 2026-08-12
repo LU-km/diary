@@ -1,11 +1,14 @@
 /**
  * routes/user.js — 个人资料中心
  * 挂载路径：/api/user
- * 功能：修改昵称 / 城市 / 签名 / 性别 / 生日（自动计算星座）、上传头像
+ *
+ * v1.0.00 变更：
+ *  - 居住地改为「国家/地区（联合国承认名单）选择 + 城市选填」；
+ *  - 新增「注销账号」：删除本人账号及其全部日记、互动数据（管理员同样适用，但最后一个管理员不可注销）。
  */
 const router = require('express').Router();
 const db = require('../lib/db');
-const { publicUser, isValidBirthday } = require('../lib/utils');
+const { publicUser, isValidBirthday, verifyPassword } = require('../lib/utils');
 const { authRequired } = require('../middleware/auth');
 const { avatarUpload } = require('../lib/upload');
 
@@ -14,11 +17,17 @@ const GENDERS = ['', '男', '女', '保密'];
 
 /** 修改个人资料 */
 router.put('/profile', authRequired, (req, res) => {
-  const { nickname, city, signature, gender, birthday } = req.body || {};
+  const { nickname, country, city, signature, gender, birthday } = req.body || {};
 
   const nick = String(nickname || '').trim();
   if (!nick || nick.length > 20) {
     return res.status(400).json({ code: 1, message: '昵称需为 1-20 个字符' });
+  }
+  if (country !== undefined && String(country).length > 60) {
+    return res.status(400).json({ code: 1, message: '国家/地区名称过长' });
+  }
+  if (city !== undefined && String(city).length > 30) {
+    return res.status(400).json({ code: 1, message: '城市最多 30 字' });
   }
   if (signature !== undefined && String(signature).length > 100) {
     return res.status(400).json({ code: 1, message: '个性签名最多 100 字' });
@@ -32,8 +41,9 @@ router.put('/profile', authRequired, (req, res) => {
 
   const user = db.update('users', req.user.id, {
     nickname: nick,
-    city: String(city || '').slice(0, 30),
-    signature: String(signature || '').slice(0, 100),
+    country: String(country || '').trim().slice(0, 60),
+    city: String(city || '').trim().slice(0, 30),
+    signature: String(signature || '').trim().slice(0, 100),
     gender: gender || '',
     birthday: birthday || '',
   });
@@ -47,6 +57,38 @@ router.post('/avatar', authRequired, avatarUpload.single('avatar'), (req, res) =
   const url = '/uploads/avatars/' + req.file.filename;
   db.update('users', req.user.id, { avatar: url });
   res.json({ code: 0, data: { url } });
+});
+
+/**
+ * 注销账号（登录用户本人，管理员同样适用）
+ * 需在请求体中回传密码进行二次校验，防止误删。
+ * 级联删除：本人会话、日记、点赞、收藏、转发记录。
+ */
+router.delete('/account', authRequired, (req, res) => {
+  const { password } = req.body || {};
+  const user = req.user;
+
+  if (!verifyPassword(String(password || ''), user.salt, user.passwordHash)) {
+    return res.status(400).json({ code: 1, message: '密码错误，无法注销' });
+  }
+
+  // 安全保护：最后一个管理员不允许注销，避免网站失去管理能力
+  if (user.role === 'admin') {
+    const adminCount = db.all('users').filter((u) => u.role === 'admin').length;
+    if (adminCount <= 1) {
+      return res.status(400).json({ code: 1, message: '这是最后一个管理员账号，不允许注销' });
+    }
+  }
+
+  // 级联删除：会话 / 日记 / 点赞 / 收藏 / 转发
+  db.filter('sessions', (s) => s.userId === user.id).forEach((s) => db.remove('sessions', s.id));
+  db.filter('diaries', (d) => d.authorId === user.id).forEach((d) => db.remove('diaries', d.id));
+  db.filter('likes', (l) => l.userId === user.id).forEach((l) => db.remove('likes', l.id));
+  db.filter('favorites', (f) => f.userId === user.id).forEach((f) => db.remove('favorites', f.id));
+  db.filter('forwards', (f) => f.userId === user.id).forEach((f) => db.remove('forwards', f.id));
+  db.remove('users', user.id);
+
+  res.json({ code: 0, message: '账号已注销，欢迎随时回来' });
 });
 
 module.exports = router;

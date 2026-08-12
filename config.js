@@ -1,10 +1,13 @@
 /**
  * config.js — 全局配置
- * 集中管理端口、目录、会话有效期、默认管理员等，方便后续扩展调整。
+ * 集中管理站点名、端口、目录、会话有效期、默认管理员、限流等，方便后续扩展调整。
  */
 const path = require('path');
 
 module.exports = {
+  // 网站名称（v1.0.00 由「拾光日记」改为「栖桉集」）
+  SITE_NAME: '栖桉集',
+
   // 服务端口（可用环境变量 PORT 覆盖）
   PORT: process.env.PORT || 3000,
 
@@ -19,6 +22,9 @@ module.exports = {
 
   // 日记正文最大长度
   MAX_DIARY_CONTENT: 10000,
+
+  // 登录 / 注册频率限制（同一 IP 在窗口内最多尝试次数，防暴力破解）
+  RATE_LIMIT: { LOGIN_MAX: 10, WINDOW_MS: 15 * 60 * 1000 },
 
   // 默认管理员（首次启动自动创建，请部署后及时修改密码）
   ADMIN_SEED: { username: 'admin', password: 'admin123' },

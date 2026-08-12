@@ -61,12 +61,28 @@ function renderSidebar(active) {
     { key: 'diaries', label: '日记审核', icon: '✎', href: '/admin/diaries.html' },
   ];
   document.getElementById('sidebar').innerHTML =
-    `<div class="sb-brand">✿ 拾光日记<span>管 理 后 台</span></div>` +
+    `<div class="sb-brand">✿ 栖桉集<span>管 理 后 台</span></div>` +
     `<nav class="sb-nav">` +
     items.map((it) =>
       `<a class="${active === it.key ? 'active' : ''}" href="${it.href}"><span>${it.icon}</span>${it.label}</a>`
     ).join('') +
     `</nav>`;
+}
+
+/** 注销当前管理员账号（需输入密码确认；最后一个管理员受保护不可注销） */
+async function adminDeleteAccount() {
+  if (!confirm('确定要注销当前管理员账号吗？此操作不可恢复，将删除该账号及其全部日记和互动数据。')) return;
+  const password = prompt('请输入当前管理员密码以确认注销：');
+  if (password === null) return;
+  try {
+    await AdminAPI.request('/api/user/account', { method: 'DELETE', body: { password } });
+    localStorage.removeItem('admin_token');
+    localStorage.removeItem('admin_user');
+    toast('账号已注销', 'success');
+    setTimeout(() => (location.href = '/'), 900);
+  } catch (err) {
+    toast(err.message, 'error');
+  }
 }
 
 /** 渲染顶栏标题与当前管理员 */

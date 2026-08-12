@@ -1,7 +1,7 @@
 {
-  "name": "shiguang-diary",
-  "version": "1.0.0",
-  "description": "拾光日记 —— 公开日记分享网站（Node.js + Express + 原生前端）",
+  "name": "qiananji",
+  "version": "1.0.00",
+  "description": "栖桉集 —— 公开日记分享网站（Node.js + Express + 原生前端）",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

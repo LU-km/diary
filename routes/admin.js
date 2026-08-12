@@ -7,9 +7,11 @@ const router = require('express').Router();
 const db = require('../lib/db');
 const { verifyPassword, publicUser, withAuthor } = require('../lib/utils');
 const { adminRequired, createSession } = require('../middleware/auth');
+const { rateLimit } = require('../middleware/security');
+const config = require('../config');
 
-/* ---------------- 后台登录（校验角色为 admin） ---------------- */
-router.post('/login', (req, res) => {
+/* ---------------- 后台登录（校验角色为 admin，含限流防爆破） ---------------- */
+router.post('/login', rateLimit({ windowMs: config.RATE_LIMIT.WINDOW_MS, max: config.RATE_LIMIT.LOGIN_MAX }), (req, res) => {
   const { username, password } = req.body || {};
   const user = db.findBy('users', (u) => u.username === String(username || ''));
 
@@ -35,6 +37,10 @@ router.get('/stats', adminRequired, (req, res) => {
       approved: diaries.filter((d) => d.status === 'approved' && d.visibility === 'public').length,
       private: diaries.filter((d) => d.visibility === 'private').length,
       rejected: diaries.filter((d) => d.status === 'rejected').length,
+      // v1.0.00：新增互动统计
+      likes: db.all('likes').length,
+      favorites: db.all('favorites').length,
+      forwards: db.all('forwards').length,
       recentUsers: db
         .all('users')
         .sort((a, b) => b.createdAt.localeCompare(a.createdAt))

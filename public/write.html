@@ -3,8 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>写日记 · 拾光日记</title>
+  <title>写日记 · 栖桉集</title>
   <link rel="stylesheet" href="/css/style.css">
+  <!-- 开源地图：Leaflet + OpenStreetMap（可商用，需署名） -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 </head>
 <body>
   <header class="nav-wrap"><nav class="container nav" id="nav"></nav></header>
@@ -32,8 +35,19 @@
         </div>
       </div>
 
+      <!-- 发布地点：地图标点（可选） -->
+      <div class="loc-pick">
+        <div class="loc-pick-head">
+          <span class="hint">发布地点（可选）：点击地图选择位置，可拖动缩放</span>
+          <button type="button" class="btn btn-ghost btn-sm" id="clearLoc">清除位置</button>
+        </div>
+        <div id="mapBox" class="map-box"></div>
+        <p id="locInfo" class="hint" style="margin-top:6px">尚未选择位置</p>
+      </div>
+
       <button id="submitBtn" class="btn btn-primary btn-block">发布日记</button>
       <p class="hint center">公开日记将提交管理员审核，通过后展示在广场；「仅自己可见」仅作者本人可见。</p>
+      <p class="hint center">发布时间将在发布时自动记录。</p>
     </div>
   </main>
 

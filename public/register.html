@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>注册 · 拾光日记</title>
+  <title>注册 · 栖桉集</title>
   <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
@@ -12,14 +12,15 @@
   <main class="container narrow">
     <div class="card form-card">
       <h2 class="form-title">注 册</h2>
-      <p class="form-sub">加入拾光日记，记录属于你的故事</p>
+      <p class="form-sub">加入栖桉集，记录属于你的故事</p>
       <form id="registerForm">
         <label>用户名
           <input id="username" type="text" required placeholder="3-20 位字母、数字、下划线或中文" autocomplete="username" maxlength="20">
         </label>
         <label>密码
-          <input id="password" type="password" required placeholder="6-30 位" autocomplete="new-password" maxlength="30">
+          <input id="password" type="password" required placeholder="8-16 位，字母和数字组合" autocomplete="new-password" maxlength="16">
         </label>
+        <p class="hint" style="margin:-8px 0 16px">密码规则：8-16 位，仅限字母和数字，且需同时包含字母和数字</p>
         <label>确认密码
           <input id="confirmPassword" type="password" required placeholder="请再次输入密码" autocomplete="new-password" maxlength="30">
         </label>

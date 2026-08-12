@@ -38,7 +38,7 @@ function renderTable(data) {
           </div>
         </div>
       </td>
-      <td>${escapeHtml(u.city || '—')}</td>
+      <td>${escapeHtml(u.country || '—')}${u.city ? ' · ' + escapeHtml(u.city) : ''}</td>
       <td>${fmtTime(u.createdAt)}</td>
       <td>${u.status === 'active' ? '<span class="badge badge-approved">正常</span>' : '<span class="badge badge-disabled">已禁用</span>'}</td>
       <td>

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>个人中心 · 拾光日记</title>
+  <title>个人中心 · 栖桉集</title>
   <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
@@ -17,6 +17,7 @@
       <div class="card profile-card">
         <img id="avatarPreview" class="avatar-lg" alt="我的头像">
         <h3 id="nicknameTitle">—</h3>
+        <span class="ip-row">最近登录 IP：<b id="userIp">未知</b></span>
         <label class="btn btn-ghost btn-sm file-btn">更换头像
           <input type="file" id="avatarFile" accept="image/*" hidden>
         </label>
@@ -30,8 +31,14 @@
               <input id="nickname" type="text" maxlength="20" required placeholder="怎么称呼你">
             </label>
           </div>
+          <div class="form-row">
+            <label>居住地（国家/地区，请选择）
+              <select id="country" required></select>
+            </label>
+            <p class="hint" id="countriesNote" style="margin-top:6px"></p>
+          </div>
           <div class="form-row two">
-            <label>居住城市
+            <label>城市（选填）
               <input id="city" type="text" maxlength="30" placeholder="如：杭州">
             </label>
             <label>性别
@@ -55,6 +62,15 @@
           </div>
           <button class="btn btn-primary" type="submit">保存资料</button>
         </form>
+
+        <!-- 注销账号（危险操作） -->
+        <div class="danger-zone">
+          <div>
+            <p style="font-size:13px;color:var(--ink-soft)">不再使用本站？</p>
+            <p class="hint">注销后将删除本账号及其全部日记、互动数据，且不可恢复。</p>
+          </div>
+          <button class="btn btn-danger" id="deleteAccountBtn">注销账号</button>
+        </div>
       </div>
     </div>
 
@@ -64,10 +80,17 @@
       <a class="btn btn-ghost btn-sm" href="/write.html">＋ 写一篇</a>
     </div>
     <div id="myDiaries" class="feed"><p class="empty">加载中…</p></div>
+
+    <!-- 我的收藏 -->
+    <div class="section-head">
+      <h2 class="section-title">我的收藏</h2>
+    </div>
+    <div id="myFavorites" class="feed"><p class="empty">还没有收藏任何日记</p></div>
   </main>
 
-  <footer class="footer">© 2026 拾光日记 · 愿你被世界温柔以待</footer>
+  <footer class="footer">© 2026 栖桉集 · 愿你被世界温柔以待</footer>
 
+  <script src="/js/countries.js"></script>
   <script src="/js/common.js"></script>
   <script src="/js/profile.js"></script>
 </body>

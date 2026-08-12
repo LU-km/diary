@@ -33,7 +33,7 @@ async function load() {
 function renderTable(data) {
   const tbody = document.getElementById('tbody');
   if (!data.list.length) {
-    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#8b857c;padding:26px">暂无数据</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#8b857c;padding:26px">暂无数据</td></tr>';
     return;
   }
   tbody.innerHTML = data.list.map((d) => `
@@ -42,6 +42,7 @@ function renderTable(data) {
       <td><div class="content-preview" title="${escapeHtml(d.content)}">${escapeHtml(d.content)}</div></td>
       <td>${(d.images || []).length} 张</td>
       <td>${d.visibility === 'public' ? '公开' : '仅自己'}</td>
+      <td>${d.location && d.location.name ? escapeHtml(d.location.name) : '—'}</td>
       <td>${statusBadgeHtml(d)}</td>
       <td>${fmtTime(d.createdAt)}</td>
       <td>
