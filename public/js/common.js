@@ -107,6 +107,34 @@ function locationBadge(d) {
   return t ? `<span class="loc">📍 ${escapeHtml(t)}</span>` : '';
 }
 
+/* ---------------- 剪贴板（兼容非 https 环境） ---------------- */
+
+/**
+ * 复制文本到剪贴板。
+ * 优先 navigator.clipboard（仅 https / localhost 可用），
+ * 失败时回退 document.execCommand('copy')（局域网 http 访问也能复制）。
+ * @returns {Promise<boolean>}
+ */
+async function copyText(text) {
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(text);
+      return true;
+    }
+  } catch { /* 继续走兜底方案 */ }
+  try {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    const ok = document.execCommand('copy');
+    document.body.removeChild(ta);
+    return ok;
+  } catch { return false; }
+}
+
 /* ---------------- 点赞 / 收藏 / 转发 ---------------- */
 
 /** 互动按钮组 HTML（data-act: like/favorite/forward） */
@@ -149,10 +177,11 @@ function wireInteractions(scope, onChanged) {
         const data = await doInteract(act, id);
         if (!data) return; // 未登录，已跳转
         if (act === 'forward') {
-          // 转发：复制分享链接 + 计次
+          // 转发：复制分享链接到剪贴板 + 计次
           const link = location.origin + '/diary.html?id=' + id;
-          try { await navigator.clipboard.writeText(link); toast('已转发，链接已复制', 'success'); }
-          catch { toast('已转发', 'success'); }
+          const ok = await copyText(link);
+          if (ok) toast('已转发，链接已复制到剪贴板', 'success');
+          else toast('已转发，复制失败，请手动复制：' + link, 'error');
         } else {
           const active = act === 'like' ? data.liked : data.favorited;
           btn.classList.toggle('on', !!active);

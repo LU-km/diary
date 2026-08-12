@@ -37,7 +37,7 @@ async function loadProfile() {
     document.getElementById('birthday').value = me.birthday || '';
     document.getElementById('birthday').max = new Date().toISOString().slice(0, 10);
     document.getElementById('zodiac').textContent = me.zodiac || '—';
-    document.getElementById('userIp').textContent = me.ip || '未知';
+    document.getElementById('userIp').textContent = (me.ip === '127.0.0.1' || me.ip === '0.0.0.0') ? '本机访问（' + me.ip + '）' : (me.ip || '未知');
   } catch (err) {
     toast(err.message, 'error');
   }

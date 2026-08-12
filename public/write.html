@@ -5,9 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>写日记 · 栖桉集</title>
   <link rel="stylesheet" href="/css/style.css">
-  <!-- 开源地图：Leaflet + OpenStreetMap（可商用，需署名） -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <!-- 开源地图：Leaflet（本地托管，无需 CDN）+ OpenStreetMap（可商用，需署名） -->
+  <link rel="stylesheet" href="/vendor/leaflet/leaflet.css">
+  <script src="/vendor/leaflet/leaflet.js"></script>
 </head>
 <body>
   <header class="nav-wrap"><nav class="container nav" id="nav"></nav></header>
@@ -43,6 +43,10 @@
         </div>
         <div id="mapBox" class="map-box"></div>
         <p id="locInfo" class="hint" style="margin-top:6px">尚未选择位置</p>
+        <div id="locNameRow" style="display:none;margin-top:8px">
+          <input id="locName" class="form-input" type="text" maxlength="100" placeholder="地点名称（可修改）">
+          <span class="hint">选点后会自动识别地名；识别失败时可直接填写，例如「杭州西湖」</span>
+        </div>
       </div>
 
       <button id="submitBtn" class="btn btn-primary btn-block">发布日记</button>
