@@ -33,6 +33,10 @@ router.post('/register', rateLimit({ scope: 'register', windowMs: config.RATE_LI
   if (!USERNAME_RE.test(String(username || ''))) {
     return res.status(400).json({ code: 1, message: '用户名需为 3-20 位字母、数字、下划线或中文' });
   }
+  // 全站文字监控（v1.3.0）：用户名 / 昵称同样受违禁词系统约束
+  const { checkContent } = require('../lib/sensitive');
+  const badName = checkContent(username);
+  if (badName) return res.status(400).json({ code: 1, message: '用户名' + badName.replace(/^内容/, '').replace(/，请修改后再提交$/, '，请换一个') });
   if (typeof password !== 'string' || !PASSWORD_RE.test(password) || !/[A-Za-z]/.test(password) || !/[0-9]/.test(password)) {
     return res.status(400).json({ code: 1, message: '密码需为 8-16 位，仅限字母和数字，且需同时包含字母和数字' });
   }

@@ -137,11 +137,17 @@ router.post('/', authRequired, (req, res) => {
   }
 
   const vis = visibility === 'private' ? 'private' : 'public';
+  // 全站文字监控（v1.3.0）：地点名称同样受违禁词系统约束
+  const loc = normalizeLocation(location);
+  if (loc && loc.name) {
+    const badLoc = checkContent(loc.name);
+    if (badLoc) return res.status(400).json({ code: 1, message: '地点名称' + badLoc.replace(/^内容/, '').replace(/，请修改后再提交$/, '，请修改') });
+  }
   const diary = db.insert('diaries', {
     authorId: req.user.id,
     content: text,
     images: normalizeImages(images),
-    location: normalizeLocation(location), // 地图标点：{lat, lng, name}
+    location: loc,
     visibility: vis,
     status: vis === 'public' ? 'pending' : 'approved', // 公开需审核，私有直接通过
     rejectReason: '',
@@ -175,10 +181,16 @@ router.put('/:id', authRequired, (req, res) => {
   }
 
   const vis = visibility === 'private' ? 'private' : 'public';
+  // 全站文字监控（v1.3.0）：地点名称同样受违禁词系统约束
+  const loc = normalizeLocation(location);
+  if (loc && loc.name) {
+    const badLoc = checkContent(loc.name);
+    if (badLoc) return res.status(400).json({ code: 1, message: '地点名称' + badLoc.replace(/^内容/, '').replace(/，请修改后再提交$/, '，请修改') });
+  }
   const updated = db.update('diaries', diary.id, {
     content: text,
     images: normalizeImages(images),
-    location: normalizeLocation(location),
+    location: loc,
     visibility: vis,
     status: vis === 'public' ? 'pending' : 'approved',
     rejectReason: '',

@@ -236,6 +236,31 @@ router.delete('/sensitive-words/:word', adminRequired, (req, res) => {
   res.json({ code: 0, data: { list: db.data.sensitiveWords || [] } });
 });
 
+/* ---------------- 违禁词白名单（v1.3.0） ---------------- */
+
+/** 白名单列表 */
+router.get('/allow-words', adminRequired, (req, res) => {
+  res.json({ code: 0, data: { list: db.data.allowWords || [] } });
+});
+
+/** 添加白名单词（文本中命中白名单词的部分被豁免） */
+router.post('/allow-words', adminRequired, (req, res) => {
+  const { addAllowWord } = require('../lib/sensitive');
+  const word = String((req.body || {}).word || '').trim();
+  if (!word) return res.status(400).json({ code: 1, message: '白名单词不能为空' });
+  if (word.length > 30) return res.status(400).json({ code: 1, message: '白名单词最多 30 字' });
+  if (!addAllowWord(word)) return res.status(400).json({ code: 1, message: '该词已在白名单中' });
+  res.json({ code: 0, data: { list: db.data.allowWords || [] } });
+});
+
+/** 删除白名单词 */
+router.delete('/allow-words/:word', adminRequired, (req, res) => {
+  const { removeAllowWord } = require('../lib/sensitive');
+  const word = decodeURIComponent(req.params.word);
+  if (!removeAllowWord(word)) return res.status(404).json({ code: 1, message: '白名单词不存在' });
+  res.json({ code: 0, data: { list: db.data.allowWords || [] } });
+});
+
 /* ---------------- 违规用户名单（v1.2.1） ---------------- */
 
 /** 违规用户名单（3 天内累计 5 次违规自动禁言 3 天；名单展示全部违规记录聚合） */

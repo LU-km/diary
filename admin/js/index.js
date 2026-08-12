@@ -109,6 +109,39 @@ document.getElementById('wordForm').addEventListener('submit', async (e) => {
   } catch (err) { toast(err.message, 'error'); }
 });
 
+/* ---------------- 白名单（v1.3.0） ---------------- */
+
+async function loadAllowWords() {
+  try {
+    const d = await AdminAPI.request('/api/admin/allow-words');
+    const box = document.getElementById('allowList');
+    box.innerHTML = d.list.length
+      ? d.list.map((w) => `<span class="word-chip word-chip-allow">${escapeHtml(w)}<button class="word-del" data-word="${encodeURIComponent(w)}">×</button></span>`).join('')
+      : '<p class="hint">白名单为空</p>';
+    box.querySelectorAll('.word-del').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        if (!confirm('确定删除该白名单词吗？')) return;
+        try {
+          await AdminAPI.request('/api/admin/allow-words/' + btn.dataset.word, { method: 'DELETE' });
+          loadAllowWords();
+        } catch (err) { toast(err.message, 'error'); }
+      });
+    });
+  } catch (err) { toast(err.message, 'error'); }
+}
+
+document.getElementById('allowForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const word = document.getElementById('allowInput').value.trim();
+  if (!word) return toast('请输入白名单词', 'error');
+  try {
+    await AdminAPI.request('/api/admin/allow-words', { method: 'POST', body: { word } });
+    document.getElementById('allowInput').value = '';
+    loadAllowWords();
+    toast('已添加', 'success');
+  } catch (err) { toast(err.message, 'error'); }
+});
+
 /* ---------------- 违规用户名单（v1.2.1） ---------------- */
 
 async function loadViolations() {
@@ -136,6 +169,7 @@ function fmtAdminTime(iso) {
 }
 
 loadWords();
+loadAllowWords();
 loadViolations();
 
 load().catch((e) => toast(e.message, 'error'));

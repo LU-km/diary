@@ -26,6 +26,18 @@ router.put('/profile', authRequired, (req, res) => {
   if (!nick || nick.length > 20) {
     return res.status(400).json({ code: 1, message: '昵称需为 1-20 个字符' });
   }
+  // 全站文字监控（v1.3.0）：昵称 / 城市 / 签名均受违禁词系统约束
+  const { checkContent } = require('../lib/sensitive');
+  const fields = [
+    { label: '昵称', value: nick },
+    { label: '城市', value: String(city || '').trim() },
+    { label: '签名', value: String(signature || '').trim() },
+  ];
+  for (const f of fields) {
+    if (!f.value) continue;
+    const bad = checkContent(f.value);
+    if (bad) return res.status(400).json({ code: 1, message: f.label + bad.replace(/^内容/, '').replace(/，请修改后再提交$/, '，请修改') });
+  }
   if (country !== undefined && String(country).length > 60) {
     return res.status(400).json({ code: 1, message: '国家/地区名称过长' });
   }
