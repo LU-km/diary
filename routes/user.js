@@ -7,10 +7,13 @@
  *  - 新增「注销账号」：删除本人账号及其全部日记、互动数据（管理员同样适用，但最后一个管理员不可注销）。
  */
 const router = require('express').Router();
+const path = require('path');
+const fs = require('fs');
 const db = require('../lib/db');
+const config = require('../config');
 const { publicUser, isValidBirthday, verifyPassword } = require('../lib/utils');
 const { authRequired } = require('../middleware/auth');
-const { avatarUpload } = require('../lib/upload');
+const { avatarUpload, isRealImage } = require('../lib/upload');
 
 // 性别可选值
 const GENDERS = ['', '男', '女', '保密'];
@@ -54,7 +57,21 @@ router.put('/profile', authRequired, (req, res) => {
 /** 上传头像（multipart/form-data，字段名 avatar） */
 router.post('/avatar', authRequired, avatarUpload.single('avatar'), (req, res) => {
   if (!req.file) return res.status(400).json({ code: 1, message: '未收到头像文件' });
+
+  // 魔数校验（防伪造 mimetype / 扩展名的非图片内容落盘）
+  const filePath = path.join(config.UPLOAD_DIR, 'avatars', req.file.filename);
+  if (!isRealImage(filePath)) {
+    fs.unlink(filePath, () => {}); // 删除伪造文件
+    return res.status(400).json({ code: 1, message: '文件内容不是有效的图片' });
+  }
+
   const url = '/uploads/avatars/' + req.file.filename;
+  // 更新头像后清理旧头像文件（磁盘卫生）
+  const old = req.user.avatar;
+  if (old && old.startsWith('/uploads/avatars/')) {
+    const oldPath = path.join(config.UPLOAD_DIR, 'avatars', path.basename(old));
+    if (oldPath !== filePath) fs.unlink(oldPath, () => {});
+  }
   db.update('users', req.user.id, { avatar: url });
   res.json({ code: 0, data: { url } });
 });
@@ -80,13 +97,8 @@ router.delete('/account', authRequired, (req, res) => {
     }
   }
 
-  // 级联删除：会话 / 日记 / 点赞 / 收藏 / 转发
-  db.filter('sessions', (s) => s.userId === user.id).forEach((s) => db.remove('sessions', s.id));
-  db.filter('diaries', (d) => d.authorId === user.id).forEach((d) => db.remove('diaries', d.id));
-  db.filter('likes', (l) => l.userId === user.id).forEach((l) => db.remove('likes', l.id));
-  db.filter('favorites', (f) => f.userId === user.id).forEach((f) => db.remove('favorites', f.id));
-  db.filter('forwards', (f) => f.userId === user.id).forEach((f) => db.remove('forwards', f.id));
-  db.remove('users', user.id);
+  // 级联删除：会话 / 日记（含日记上的互动）/ 本人产生的互动
+  db.removeUserCascade(user.id);
 
   res.json({ code: 0, message: '账号已注销，欢迎随时回来' });
 });

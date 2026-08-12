@@ -2,3 +2,11 @@ node_modules/
 data/
 uploads/
 *.log
+
+# 内部文档，不进入仓库
+项目交接书.md
+
+# 密码/会话数据（含密码散列与盐值），严禁入库 —— 双保险，即使 data/ 目录结构变动也不会上传
+data/db.json
+data/db.json.tmp
+*.tmp

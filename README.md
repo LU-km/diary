@@ -1,6 +1,6 @@
 # ✿ 栖桉集 —— 公开日记分享网站
 
-> 当前版本：**v1.0.00**（2026-08-12）
+> 当前版本：**v1.0.01**（2026-08-12）
 
 清新文艺风格的公开日记社区，主色调为淡蓝。前端使用原生 HTML + CSS + JavaScript，后端使用 Node.js + Express，数据存储于本地 JSON 文件，开箱即用、无需数据库。更新记录见 [CHANGELOG.md](./CHANGELOG.md)。
 
@@ -29,7 +29,7 @@
 
 ```
 dairy/
-├── package.json            # 依赖、版本号（1.0.00）与启动脚本
+├── package.json            # 依赖、版本号（1.0.01）与启动脚本
 ├── config.js               # 全局配置（站点名/端口/会话/限流/管理员种子）
 ├── server.js               # 服务入口（含安全响应头）
 ├── CHANGELOG.md            # 更新日志
@@ -110,11 +110,13 @@ npm start
 
 ## 五、安全说明
 
-- **密码存储位置**：所有密码以「加盐 scrypt 散列」保存在 `data/db.json` 的 `users` 数组中，字段为 `passwordHash`（64 字节十六进制散列）与 `salt`（盐值），**绝不存储明文**；登录时用相同盐值重新散列后比对。
-- **防暴力破解**：前台登录 / 注册、后台登录均限流（同一 IP 15 分钟内最多 10 次）。
+- **密码存储位置**：所有密码以「加盐 scrypt 散列」保存在 `data/db.json` 的 `users` 数组中，字段为 `passwordHash`（64 字节十六进制散列）与 `salt`（盐值），**绝不存储明文**；登录时用相同盐值重新散列后比对。该文件在 `.gitignore` 中，**不会进入代码仓库**。
+- **防暴力破解**：前台登录 / 注册、后台登录均限流（同一 IP 15 分钟内最多 10 次**失败**），按接口分桶互不挤占；成功登录不计入，正常用户不受影响；注册接口成功也计数以防范批量注册。
+- **代理信任开关**：默认**不信任** `X-Forwarded-For` 头（防伪造 IP 绕过限流）；仅当部署在受信反向代理后，才将 `config.js` 的 `TRUST_PROXY` 改为 `true` 以获取真实客户端 IP。
 - **安全响应头**：`X-Content-Type-Options`、`X-Frame-Options`、`Referrer-Policy`、基础 CSP；已关闭 `X-Powered-By`。
 - **前端防 XSS**：所有用户内容输出前均经过 HTML 转义。
-- **上传安全**：仅允许 jpg / png / gif / webp，头像 ≤2MB、配图 ≤5MB，随机文件名，图片路径白名单防穿越。
+- **上传安全（v1.0.01 加固）**：仅允许 jpg / png / gif / webp（**MIME + 扩展名双重白名单**），头像 ≤2MB、配图 ≤5MB，随机文件名；落盘后**校验文件魔数**（真实图片头），非真实图片一律拒绝并删除；图片路径白名单防穿越。
+- **级联清理（v1.0.01 加固）**：删除日记 / 删除用户 / 注销账号时，关联的点赞、收藏、转发记录一并清理，不留孤儿数据。
 - **已知说明**：CSP 中脚本允许 `'unsafe-inline'`（兼容页面内联交互代码）与地图 CDN；生产环境如需更严格策略可进一步收紧。
 
 ---
@@ -156,7 +158,7 @@ npm start
 | PUT | /diaries/:id/reject | 审核驳回（记录原因） |
 | DELETE | /diaries/:id | 删除日记 |
 
-鉴权方式：请求头 `Authorization: Bearer <token>`（登录接口返回 token）。
+鉴权方式：请求头 `Authorization: Bearer <token>`。
 
 ---
 
@@ -177,7 +179,7 @@ npm start
    # 编写 qiananji.service，ExecStart=/usr/bin/node /path/to/dairy/server.js
    ```
 5. 建议通过 Nginx 反向代理并配置 HTTPS、限制 `uploads` 上传大小（`client_max_body_size`）；
-   反向代理时请保留 `X-Forwarded-For` 头，便于获取真实 IP 与限流。
+   反向代理时请保留 `X-Forwarded-For` 头，**并同步将 `config.js` 的 `TRUST_PROXY` 改为 `true`**（否则真实 IP 与限流无法生效；直连公网时务必保持 `false`）。
 
 ### 数据说明
 - 用户、日记、会话、点赞、收藏、转发均保存在 `data/db.json`，**备份该文件即可备份全站数据**；

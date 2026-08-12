@@ -26,6 +26,11 @@ module.exports = {
   // 登录 / 注册频率限制（同一 IP 在窗口内最多尝试次数，防暴力破解）
   RATE_LIMIT: { LOGIN_MAX: 10, WINDOW_MS: 15 * 60 * 1000 },
 
+  // 是否信任反向代理设置的 X-Forwarded-For 头。
+  // 仅当部署在 Nginx 等代理之后才置为 true；直连公网时必须保持 false，
+  // 否则攻击者可伪造该头绕过限流并伪造登录 IP。
+  TRUST_PROXY: false,
+
   // 默认管理员（首次启动自动创建，请部署后及时修改密码）
   ADMIN_SEED: { username: 'admin', password: 'admin123' },
 };

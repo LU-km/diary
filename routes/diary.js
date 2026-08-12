@@ -80,12 +80,12 @@ router.get('/mine', authRequired, (req, res) => {
   res.json({ code: 0, data: list });
 });
 
-/** 我的收藏（个人中心） */
+/** 我的收藏（个人中心；仅返回当前仍可见的日记，作者改为私有/未通过后不再展示） */
 router.get('/favorites', authRequired, (req, res) => {
   const favIds = db.filter('favorites', (f) => f.userId === req.user.id).map((f) => f.diaryId);
   const list = db
     .all('diaries')
-    .filter((d) => favIds.includes(d.id))
+    .filter((d) => favIds.includes(d.id) && canView(d, req.user))
     .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
     .map((d) => decorate(d, req.user));
   res.json({ code: 0, data: list });
@@ -162,11 +162,7 @@ router.delete('/:id', authRequired, (req, res) => {
   if (diary.authorId !== req.user.id && req.user.role !== 'admin') {
     return res.status(403).json({ code: 1, message: '无权删除他人的日记' });
   }
-  db.remove('diaries', diary.id);
-  // 级联清理该日记的互动数据
-  db.filter('likes', (l) => l.diaryId === diary.id).forEach((x) => db.remove('likes', x.id));
-  db.filter('favorites', (f) => f.diaryId === diary.id).forEach((x) => db.remove('favorites', x.id));
-  db.filter('forwards', (f) => f.diaryId === diary.id).forEach((x) => db.remove('forwards', x.id));
+  db.removeDiaryCascade(diary.id);
   res.json({ code: 0, message: '已删除' });
 });
 

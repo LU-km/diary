@@ -10,8 +10,8 @@ const { adminRequired, createSession } = require('../middleware/auth');
 const { rateLimit } = require('../middleware/security');
 const config = require('../config');
 
-/* ---------------- 后台登录（校验角色为 admin，含限流防爆破） ---------------- */
-router.post('/login', rateLimit({ windowMs: config.RATE_LIMIT.WINDOW_MS, max: config.RATE_LIMIT.LOGIN_MAX }), (req, res) => {
+/* ---------------- 后台登录（校验角色为 admin，含限流防爆破；独立于前台限流桶） ---------------- */
+router.post('/login', rateLimit({ scope: 'admin-login', windowMs: config.RATE_LIMIT.WINDOW_MS, max: config.RATE_LIMIT.LOGIN_MAX }), (req, res) => {
   const { username, password } = req.body || {};
   const user = db.findBy('users', (u) => u.username === String(username || ''));
 
@@ -89,9 +89,8 @@ router.delete('/users/:id', adminRequired, (req, res) => {
   if (target.id === req.user.id) return res.status(400).json({ code: 1, message: '不能删除当前管理员账号' });
   if (target.role === 'admin') return res.status(400).json({ code: 1, message: '不能删除管理员账号' });
 
-  db.filter('sessions', (s) => s.userId === target.id).forEach((s) => db.remove('sessions', s.id));
-  db.filter('diaries', (d) => d.authorId === target.id).forEach((d) => db.remove('diaries', d.id));
-  db.remove('users', target.id);
+  // 级联删除：会话 / 日记（含日记上的互动）/ 本人产生的互动
+  db.removeUserCascade(target.id);
   res.json({ code: 0, message: '已删除用户及相关日记' });
 });
 
@@ -128,11 +127,11 @@ router.put('/diaries/:id/reject', adminRequired, (req, res) => {
   res.json({ code: 0, data: withAuthor(updated) });
 });
 
-/** 删除日记（违规内容处理） */
+/** 删除日记（违规内容处理；级联清理该日记的互动数据） */
 router.delete('/diaries/:id', adminRequired, (req, res) => {
   const diary = db.findById('diaries', req.params.id);
   if (!diary) return res.status(404).json({ code: 1, message: '日记不存在' });
-  db.remove('diaries', diary.id);
+  db.removeDiaryCascade(diary.id);
   res.json({ code: 0, message: '已删除' });
 });
 

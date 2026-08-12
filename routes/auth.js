@@ -19,8 +19,8 @@ const USERNAME_RE = /^[a-zA-Z0-9_一-龥]{3,20}$/;
 // 普通用户密码规则：8-16 位，仅字母数字，且须同时包含字母和数字（管理员豁免）
 const PASSWORD_RE = /^[A-Za-z0-9]{8,16}$/;
 
-/** 注册（限流：防批量注册） */
-router.post('/register', rateLimit({ windowMs: config.RATE_LIMIT.WINDOW_MS, max: config.RATE_LIMIT.LOGIN_MAX }), (req, res) => {
+/** 注册（限流：防批量注册，成功也计数） */
+router.post('/register', rateLimit({ scope: 'register', windowMs: config.RATE_LIMIT.WINDOW_MS, max: config.RATE_LIMIT.LOGIN_MAX, countSuccess: true }), (req, res) => {
   const { username, password, confirmPassword } = req.body || {};
 
   if (!USERNAME_RE.test(String(username || ''))) {
@@ -60,8 +60,8 @@ router.post('/register', rateLimit({ windowMs: config.RATE_LIMIT.WINDOW_MS, max:
   res.json({ code: 0, data: { token, user: publicUser(user) } });
 });
 
-/** 登录（限流：防暴力破解） */
-router.post('/login', rateLimit({ windowMs: config.RATE_LIMIT.WINDOW_MS, max: config.RATE_LIMIT.LOGIN_MAX }), (req, res) => {
+/** 登录（限流：防暴力破解，仅失败计数） */
+router.post('/login', rateLimit({ scope: 'login', windowMs: config.RATE_LIMIT.WINDOW_MS, max: config.RATE_LIMIT.LOGIN_MAX }), (req, res) => {
   const { username, password } = req.body || {};
   const user = db.findBy('users', (u) => u.username === String(username || ''));
 

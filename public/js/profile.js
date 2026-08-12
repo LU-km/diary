@@ -184,7 +184,6 @@ function bindEvents() {
   document.getElementById('profileForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const country = document.getElementById('country').value;
-    if (!country) return toast('请选择居住地（国家/地区）', 'error');
     const body = {
       nickname: document.getElementById('nickname').value.trim(),
       country,
