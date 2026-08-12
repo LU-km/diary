@@ -185,6 +185,61 @@ crontab -e
   <li><span class="tag warn">注意</span> 正式上线前：扩充违禁词库（当前为演示集）、修改默认管理员密码、后台过一遍所有内容审核。</li>
 </ul>
 
-<p style="margin-top:36px;color:#999;font-size:13px;text-align:center">— 栖桉集 · 部署上线方案 v1（2026-08-12）—</p>
+<h2>七、Cloudflare 方案（免费零成本，v1.3.1 补充）</h2>
+
+<h3>7.1 为什么推荐 Cloudflare Tunnel</h3>
+<ul>
+  <li><b>完全免费</b>：Cloudflare 免费版即可，无服务器费、无带宽费；</li>
+  <li><b>无需公网 IP</b>：家里电脑 / 旧笔记本也能托管（只要保持开机）；</li>
+  <li><b>无需 ICP 备案</b>：域名解析在 Cloudflare（境外），流量走 Cloudflare 隧道出口，不指向境内机房 IP——个人小站常用做法；</li>
+  <li><b>自带 HTTPS</b>：Cloudflare 自动签发证书，用户访问 https 加密；</li>
+  <li><b>附赠防护</b>：免费 CDN 缓存、DDoS 防护、Bot 拦截。</li>
+</ul>
+<blockquote>
+⚠️ 说明：若服务器位于<b>境内机房</b>，按工信部规定仍建议完成 ICP 备案；用<b>家庭宽带 / 境外 VPS</b> 则无备案要求。Cloudflare 免费版国内访问速度一般，适合小流量站点，体验好于无，但不如国内云服务器直连。
+</blockquote>
+
+<h3>7.2 部署步骤（隧道方式）</h3>
+<pre>
+# ① 注册 Cloudflare（免费）并添加一个域名（可用便宜域名，如 .top）
+#    把域名的 NS 改到 Cloudflare 提供的两个 NS 地址（等待生效）
+
+# ② 在托管机器上安装 cloudflared（Linux 示例；Windows 有同款 exe）
+curl -L https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64 -o /usr/local/bin/cloudflared
+chmod +x /usr/local/bin/cloudflared
+cloudflared --version
+
+# ③ 登录并创建隧道（会打开浏览器授权，选择你的域名）
+cloudflared tunnel login
+cloudflared tunnel create diary
+
+# ④ 写隧道配置（指向本项目的 3000 端口）
+cat &gt; ~/.cloudflared/config.yml &lt;&lt;'EOF'
+tunnel: diary
+credentials-file: /root/.cloudflared/&lt;隧道ID&gt;.json
+ingress:
+  - hostname: diary.你的域名.com
+    service: http://localhost:3000
+  - service: http_status:404
+EOF
+
+# ⑤ 绑定域名并启动
+cloudflared tunnel route dns diary diary.你的域名.com
+cloudflared tunnel run diary
+
+# ⑥ 开机自启（Linux systemd）
+cloudflared install
+</pre>
+<p>完成后访问 <code>https://diary.你的域名.com</code> 即可（HTTPS 已自动启用）。</p>
+
+<h3>7.3 两种 Cloudflare 路线的选择建议</h3>
+<table>
+  <tr><th>情况</th><th>推荐</th></tr>
+  <tr><td>只想零成本快速上线、访问量小、机器家里</td><td><b>Cloudflare Tunnel</b>（本方案）</td></tr>
+  <tr><td>已有国内轻量云服务器、要稳定快速</td><td>方案 A（轻量云 + Nginx + 可选套 Cloudflare CDN 加速/防护）</td></tr>
+  <tr><td>不想备案且想要稍好的国内速度</td><td>境外优化线路 VPS + Cloudflare 隧道/CDN</td></tr>
+</table>
+
+<p style="margin-top:36px;color:#999;font-size:13px;text-align:center">— 栖桉集 · 部署上线方案 v1.1（2026-08-12）—</p>
 </body>
 </html>
