@@ -211,4 +211,37 @@ router.post('/broadcast', adminRequired, (req, res) => {
   res.json({ code: 0, data: msg });
 });
 
+/* ---------------- 违禁词库（v1.2.1） ---------------- */
+
+/** 违禁词列表 */
+router.get('/sensitive-words', adminRequired, (req, res) => {
+  res.json({ code: 0, data: { list: db.data.sensitiveWords || [] } });
+});
+
+/** 添加违禁词（去重、长度限制） */
+router.post('/sensitive-words', adminRequired, (req, res) => {
+  const { addWord } = require('../lib/sensitive');
+  const word = String((req.body || {}).word || '').trim();
+  if (!word) return res.status(400).json({ code: 1, message: '违禁词不能为空' });
+  if (word.length > 20) return res.status(400).json({ code: 1, message: '违禁词最多 20 字' });
+  if (!addWord(word)) return res.status(400).json({ code: 1, message: '该词已在库中' });
+  res.json({ code: 0, data: { list: db.data.sensitiveWords || [] } });
+});
+
+/** 删除违禁词 */
+router.delete('/sensitive-words/:word', adminRequired, (req, res) => {
+  const { removeWord } = require('../lib/sensitive');
+  const word = decodeURIComponent(req.params.word);
+  if (!removeWord(word)) return res.status(404).json({ code: 1, message: '违禁词不存在' });
+  res.json({ code: 0, data: { list: db.data.sensitiveWords || [] } });
+});
+
+/* ---------------- 违规用户名单（v1.2.1） ---------------- */
+
+/** 违规用户名单（3 天内累计 5 次违规自动禁言 3 天；名单展示全部违规记录聚合） */
+router.get('/violations', adminRequired, (req, res) => {
+  const { aggregateViolations } = require('../lib/violations');
+  res.json({ code: 0, data: { list: aggregateViolations(), threshold: 5, windowDays: 3 } });
+});
+
 module.exports = router;

@@ -386,3 +386,17 @@ input:focus, textarea:focus, select:focus {
 .reply-to { color: #3e6f96; font-size: 12px; }
 .reply-bar { display: flex; align-items: center; gap: 8px; }
 .reply-hint { font-size: 13px; color: #3e6f96; }
+
+/* ---------------- v1.2.1：消息筛选 / 私信优化 ---------------- */
+.msg-filters { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+.msg-filters .tab {
+  border: 1px solid var(--line, #e6e2da); background: #fff; border-radius: 16px; padding: 4px 16px;
+  font-size: 13px; cursor: pointer; color: var(--ink-soft, #8b857c);
+}
+.msg-filters .tab.active { background: var(--primary, #7d9d85); color: #fff; border-color: var(--primary, #7d9d85); }
+.avatar.xs { width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0; }
+.dm-item { flex-direction: row; align-items: flex-end; gap: 8px; }
+.dm-item .dm-body { display: flex; flex-direction: column; }
+.dm-item.mine { flex-direction: row-reverse; }
+.dm-item.mine .dm-body { align-items: flex-end; }
+.dm-item .avatar.right { margin-left: auto; }

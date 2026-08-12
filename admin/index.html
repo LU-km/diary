@@ -72,6 +72,24 @@
           <button class="btn" type="submit">发送广播</button>
         </form>
       </div>
+
+      <!-- 违禁词库（v1.2.1） -->
+      <div class="card" style="margin-top:18px;max-width:520px">
+        <h3>违禁词库</h3>
+        <p class="hint">命中违禁词的内容会被自动拦截（发布日记 / 评论 / 私信 / 广播）；同一用户 3 天内累计 5 次违规将自动禁言 3 天。</p>
+        <div class="word-list" id="wordList"><p class="hint">加载中…</p></div>
+        <form id="wordForm" class="word-form">
+          <input id="wordInput" type="text" maxlength="20" placeholder="输入要添加的违禁词…">
+          <button class="btn btn-sm" type="submit">添加</button>
+        </form>
+      </div>
+
+      <!-- 违规用户名单（v1.2.1） -->
+      <div class="card" style="margin-top:18px;max-width:520px">
+        <h3>违规用户</h3>
+        <p class="hint">3 天内违规累计 5 次自动禁言 3 天（系统已发消息通知本人）。</p>
+        <ul class="mini-list" id="violationList"><li class="hint">加载中…</li></ul>
+      </div>
     </main>
   </div>
 

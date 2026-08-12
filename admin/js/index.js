@@ -76,4 +76,66 @@ document.getElementById('broadcastForm').addEventListener('submit', async (e) =>
   }
 });
 
+/* ---------------- 违禁词库（v1.2.1） ---------------- */
+
+async function loadWords() {
+  try {
+    const d = await AdminAPI.request('/api/admin/sensitive-words');
+    const box = document.getElementById('wordList');
+    box.innerHTML = d.list.length
+      ? d.list.map((w) => `<span class="word-chip">${escapeHtml(w)}<button class="word-del" data-word="${encodeURIComponent(w)}">×</button></span>`).join('')
+      : '<p class="hint">词库为空</p>';
+    box.querySelectorAll('.word-del').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        if (!confirm('确定删除该违禁词吗？')) return;
+        try {
+          await AdminAPI.request('/api/admin/sensitive-words/' + btn.dataset.word, { method: 'DELETE' });
+          loadWords();
+        } catch (err) { toast(err.message, 'error'); }
+      });
+    });
+  } catch (err) { toast(err.message, 'error'); }
+}
+
+document.getElementById('wordForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const word = document.getElementById('wordInput').value.trim();
+  if (!word) return toast('请输入违禁词', 'error');
+  try {
+    await AdminAPI.request('/api/admin/sensitive-words', { method: 'POST', body: { word } });
+    document.getElementById('wordInput').value = '';
+    loadWords();
+    toast('已添加', 'success');
+  } catch (err) { toast(err.message, 'error'); }
+});
+
+/* ---------------- 违规用户名单（v1.2.1） ---------------- */
+
+async function loadViolations() {
+  try {
+    const d = await AdminAPI.request('/api/admin/violations');
+    const box = document.getElementById('violationList');
+    box.innerHTML = d.list.length
+      ? d.list.map((v) => `
+        <li class="violation-item">
+          <img class="avatar xs" src="${v.avatar}" alt="头像">
+          <div class="violation-body">
+            <span class="nickname">${escapeHtml(v.nickname)} <span class="dim">@${escapeHtml(v.username)}</span></span>
+            <span class="dim">违规 ${v.count} 次 · 最近 ${fmtAdminTime(v.lastAt)}</span>
+          </div>
+          ${v.muted ? '<span class="badge badge-danger">禁言中</span>' : '<span class="badge">正常</span>'}
+        </li>`).join('')
+      : '<li class="hint">暂无违规记录，社区很和谐 🎉</li>';
+  } catch (err) { toast(err.message, 'error'); }
+}
+
+function fmtAdminTime(iso) {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  return `${d.getMonth() + 1}月${d.getDate()}日 ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+}
+
+loadWords();
+loadViolations();
+
 load().catch((e) => toast(e.message, 'error'));

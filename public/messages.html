@@ -29,6 +29,13 @@
         <h2 class="section-title">消息中心</h2>
         <button class="btn btn-ghost btn-sm" id="readAllBtn">全部已读</button>
       </div>
+      <div class="msg-filters" id="msgFilters">
+        <button class="tab active" data-filter="all">全部</button>
+        <button class="tab" data-filter="like">点赞</button>
+        <button class="tab" data-filter="interact">评论回复</button>
+        <button class="tab" data-filter="dm">私信</button>
+        <button class="tab" data-filter="broadcast">广播</button>
+      </div>
       <div id="msgList" class="msg-list"><p class="empty">加载中…</p></div>
     </div>
   </main>

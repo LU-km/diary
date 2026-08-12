@@ -21,6 +21,7 @@ const {
 const { authRequired, getUserFromRequest } = require('../middleware/auth');
 const { sendMessage } = require('../lib/notify');
 const { checkContent } = require('../lib/sensitive');
+const { recordViolation } = require('../lib/violations');
 
 /* ---------------- 工具函数 ---------------- */
 
@@ -128,9 +129,12 @@ router.post('/', authRequired, (req, res) => {
   if (text.length > config.MAX_DIARY_CONTENT) {
     return res.status(400).json({ code: 1, message: `日记内容最多 ${config.MAX_DIARY_CONTENT} 字` });
   }
-  // 敏感词过滤（无审核员方案第一道防线）
+  // 敏感词过滤（无审核员方案第一道防线）；违规累计 3 天 5 次自动禁言
   const bad = checkContent(text);
-  if (bad) return res.status(400).json({ code: 1, message: bad });
+  if (bad) {
+    recordViolation(req.user.id, 'diary', bad);
+    return res.status(400).json({ code: 1, message: bad });
+  }
 
   const vis = visibility === 'private' ? 'private' : 'public';
   const diary = db.insert('diaries', {
@@ -163,9 +167,12 @@ router.put('/:id', authRequired, (req, res) => {
   if (text.length > config.MAX_DIARY_CONTENT) {
     return res.status(400).json({ code: 1, message: `日记内容最多 ${config.MAX_DIARY_CONTENT} 字` });
   }
-  // 敏感词过滤（无审核员方案第一道防线）
+  // 敏感词过滤（无审核员方案第一道防线）；违规累计 3 天 5 次自动禁言
   const bad = checkContent(text);
-  if (bad) return res.status(400).json({ code: 1, message: bad });
+  if (bad) {
+    recordViolation(req.user.id, 'diary', bad);
+    return res.status(400).json({ code: 1, message: bad });
+  }
 
   const vis = visibility === 'private' ? 'private' : 'public';
   const updated = db.update('diaries', diary.id, {
@@ -290,9 +297,12 @@ router.post('/:id/comments', authRequired, (req, res) => {
   if (text.length > MAX_COMMENT_LENGTH) {
     return res.status(400).json({ code: 1, message: `评论最多 ${MAX_COMMENT_LENGTH} 字` });
   }
-  // 敏感词过滤
+  // 敏感词过滤；违规累计 3 天 5 次自动禁言
   const bad = checkContent(text);
-  if (bad) return res.status(400).json({ code: 1, message: bad });
+  if (bad) {
+    recordViolation(req.user.id, 'comment', bad);
+    return res.status(400).json({ code: 1, message: bad });
+  }
 
   // 回复目标校验：parentId 必须是同一篇日记下的评论
   const parentId = (req.body || {}).parentId ? String((req.body || {}).parentId) : null;

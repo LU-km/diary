@@ -1,19 +1,60 @@
 /**
- * messages.js — 消息中心（v1.2.0）
- * 消息类型：like（被点赞）/ comment（被评论）/ reply（评论被回复）/ broadcast（广播）/ dm（私信）
- * ?with=userId 进入私信对话视图；否则显示全部消息列表。
+ * messages.js — 消息中心（v1.2.0；v1.2.1 增加筛选 Tab 与私信界面优化）
+ * 消息类型：like（被点赞）/ comment（被评论）/ reply（评论被回复）/ broadcast（广播）/ dm（私信）/ system（系统通知）
+ * ?with=userId 进入私信对话视图；否则显示全部消息列表（可筛选）。
  */
 const params = new URLSearchParams(location.search);
 const withId = params.get('with');
+let filterType = 'all'; // all | like | interact | dm | broadcast
 
 async function init() {
   if (!requireLogin()) return;
   renderNav('messages');
   if (withId) await initDm(withId);
-  else await initList();
+  else {
+    initFilters();
+    await initList();
+  }
+}
+
+/* ---------------- 筛选 Tab ---------------- */
+
+function initFilters() {
+  document.querySelectorAll('#msgFilters .tab').forEach((t) => {
+    t.addEventListener('click', () => {
+      document.querySelectorAll('#msgFilters .tab').forEach((x) => x.classList.remove('active'));
+      t.classList.add('active');
+      filterType = t.dataset.filter;
+      initList();
+    });
+  });
+}
+
+/** 按当前筛选类型过滤消息 */
+function filterMessages(list) {
+  switch (filterType) {
+    case 'like': return list.filter((m) => m.type === 'like');
+    case 'interact': return list.filter((m) => m.type === 'comment' || m.type === 'reply');
+    case 'dm': return list.filter((m) => m.type === 'dm');
+    case 'broadcast': return list.filter((m) => m.type === 'broadcast');
+    default: return list;
+  }
 }
 
 /* ---------------- 私信对话 ---------------- */
+
+/** 友好时间：今天 HH:MM，昨天，更早显示日期 */
+function friendlyTime(iso) {
+  const d = new Date(iso);
+  const now = new Date();
+  const hh = String(d.getHours()).padStart(2, '0');
+  const mm = String(d.getMinutes()).padStart(2, '0');
+  const sameDay = d.toDateString() === now.toDateString();
+  const yesterday = new Date(now.getTime() - 86400000).toDateString() === d.toDateString();
+  if (sameDay) return `今天 ${hh}:${mm}`;
+  if (yesterday) return `昨天 ${hh}:${mm}`;
+  return `${d.getMonth() + 1}月${d.getDate()}日 ${hh}:${mm}`;
+}
 
 async function initDm(uid) {
   document.getElementById('dmView').style.display = 'block';
@@ -29,6 +70,13 @@ async function initDm(uid) {
     toast(err.message, 'error');
   }
   document.getElementById('dmForm').addEventListener('submit', sendDm);
+  // Ctrl+Enter 快捷发送（v1.2.1 优化）
+  document.getElementById('dmInput').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+      e.preventDefault();
+      document.getElementById('dmForm').requestSubmit();
+    }
+  });
 }
 
 async function loadDm(uid) {
@@ -39,9 +87,13 @@ async function loadDm(uid) {
     box.innerHTML = list.length
       ? list.map((m) => {
           const mine = m.fromUserId === me.id;
+          const avatar = (mine ? me.avatar : (m.from ? m.from.avatar : '')).replace(/^\/uploads\//, '/uploads/');
           return `<div class="dm-item ${mine ? 'mine' : ''}">
-            <div class="dm-bubble">${escapeHtml(m.content)}</div>
-            <span class="dm-time">${fmtTime(m.createdAt)}</span>
+            <img class="avatar xs ${mine ? 'right' : ''}" src="${avatar}" alt="头像">
+            <div class="dm-body">
+              <div class="dm-bubble">${escapeHtml(m.content)}</div>
+              <span class="dm-time">${friendlyTime(m.createdAt)}</span>
+            </div>
           </div>`;
         }).join('')
       : '<p class="empty">还没有私信，打个招呼吧～</p>';
@@ -61,7 +113,8 @@ async function sendDm(e) {
   try {
     await API.request('/api/messages/dm', { method: 'POST', body: { toUserId: withId, content } });
     document.getElementById('dmInput').value = '';
-    loadDm(withId);
+    await loadDm(withId);
+    document.getElementById('dmInput').focus(); // 发送后保持焦点（v1.2.1 优化）
   } catch (err) {
     toast(err.message, 'error');
   }
@@ -77,6 +130,7 @@ const MSG_META = {
   reply: { icon: '↩️', label: '回复', cls: 'msg-reply' },
   broadcast: { icon: '📢', label: '广播', cls: 'msg-broadcast' },
   dm: { icon: '✉️', label: '私信', cls: 'msg-dm' },
+  system: { icon: '⚠️', label: '系统', cls: 'msg-system' },
 };
 
 function msgText(m) {
@@ -88,16 +142,18 @@ function msgText(m) {
     case 'reply': return `<b>${escapeHtml(from)}</b> 回复了你的评论：${preview}${m.content && m.content.length > 40 ? '…' : ''}`;
     case 'broadcast': return `<b>${escapeHtml(from)}</b>：${preview}${m.content && m.content.length > 40 ? '…' : ''}`;
     case 'dm': return `<b>${escapeHtml(from)}</b> 发来私信：${preview}${m.content && m.content.length > 40 ? '…' : ''}`;
+    case 'system': return `系统通知：${preview}${m.content && m.content.length > 40 ? '…' : ''}`;
     default: return escapeHtml(from);
   }
 }
 
 async function initList() {
   try {
-    const list = await API.request('/api/messages');
+    const all = await API.request('/api/messages');
+    const list = filterMessages(all);
     const box = document.getElementById('msgList');
     if (!list.length) {
-      box.innerHTML = '<p class="empty">还没有任何消息</p>';
+      box.innerHTML = '<p class="empty">' + (all.length ? '当前分类下没有消息' : '还没有任何消息') + '</p>';
       return;
     }
     box.innerHTML = list.map((m) => {
@@ -111,11 +167,10 @@ async function initList() {
         <span class="msg-icon">${meta.icon}</span>
         <div class="msg-body">
           <div class="msg-text">${msgText(m)}</div>
-          <div class="msg-meta"><span>${fmtTime(m.createdAt)}</span>${diaryLink}${dmLink}</div>
+          <div class="msg-meta"><span>${friendlyTime(m.createdAt)}</span>${diaryLink}${dmLink}</div>
         </div>
       </div>`;
     }).join('');
-    box.querySelectorAll('.msg-go').forEach(() => {}); // 事件由链接默认行为处理
     refreshMsgDot();
   } catch (err) {
     toast(err.message, 'error');
