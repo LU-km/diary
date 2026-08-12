@@ -36,6 +36,30 @@
           <ul class="mini-list" id="recentDiaries"></ul>
         </div>
       </div>
+
+      <!-- 修改密码 -->
+      <div class="card" style="margin-top:18px;max-width:520px">
+        <h3>修改密码</h3>
+        <form id="passwordForm">
+          <div class="form-row">
+            <label>当前密码
+              <input id="oldPassword" type="password" required autocomplete="current-password">
+            </label>
+          </div>
+          <div class="form-row">
+            <label>新密码
+              <input id="newPassword" type="password" required autocomplete="new-password" placeholder="至少 8 位（管理员不限字符集）">
+            </label>
+          </div>
+          <div class="form-row">
+            <label>确认新密码
+              <input id="confirmPassword" type="password" required autocomplete="new-password">
+            </label>
+          </div>
+          <p class="hint">修改成功后所有会话将失效，需要重新登录。</p>
+          <button class="btn" type="submit">修改密码</button>
+        </form>
+      </div>
     </main>
   </div>
 

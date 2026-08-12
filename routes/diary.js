@@ -15,7 +15,7 @@
 const router = require('express').Router();
 const db = require('../lib/db');
 const config = require('../config');
-const { withAuthor, normalizeLocation } = require('../lib/utils');
+const { withAuthor, normalizeLocation, getMuteState, muteMessage, publicUser } = require('../lib/utils');
 const { authRequired, getUserFromRequest } = require('../middleware/auth');
 
 /* ---------------- 工具函数 ---------------- */
@@ -105,8 +105,12 @@ router.get('/:id', (req, res) => {
 
 /* ---------------- 发布 / 编辑 / 删除 ---------------- */
 
-/** 发布日记（登录用户，支持地点与可见性） */
+/** 发布日记（登录用户，支持地点与可见性；禁言期间不可发布） */
 router.post('/', authRequired, (req, res) => {
+  // 禁言检查：禁言期间无法发布日记
+  if (getMuteState(req.user).muted) {
+    return res.status(403).json({ code: 1, message: muteMessage(req.user) });
+  }
   const { content, visibility, images, location } = req.body || {};
   const text = String(content || '').trim();
   if (!text) return res.status(400).json({ code: 1, message: '日记内容不能为空' });
@@ -129,8 +133,12 @@ router.post('/', authRequired, (req, res) => {
   res.json({ code: 0, data: decorate(diary, req.user) });
 });
 
-/** 编辑日记（仅作者本人；公开日记编辑后重新进入审核） */
+/** 编辑日记（仅作者本人；公开日记编辑后重新进入审核；禁言期间不可编辑） */
 router.put('/:id', authRequired, (req, res) => {
+  // 禁言检查：禁言期间不允许编辑（编辑等同发布新内容）
+  if (getMuteState(req.user).muted) {
+    return res.status(403).json({ code: 1, message: muteMessage(req.user) });
+  }
   const diary = db.findById('diaries', req.params.id);
   if (!diary) return res.status(404).json({ code: 1, message: '日记不存在' });
   if (diary.authorId !== req.user.id) return res.status(403).json({ code: 1, message: '无权编辑他人的日记' });
@@ -204,6 +212,63 @@ router.post('/:id/forward', authRequired, (req, res) => {
   if (!existing) db.insert('forwards', { diaryId: diary.id, userId: req.user.id, createdAt: new Date().toISOString() });
 
   res.json({ code: 0, data: { forwarded: true, count: db.filter('forwards', (f) => f.diaryId === diary.id).length } });
+});
+
+/* ---------------- 评论 ---------------- */
+
+const MAX_COMMENT_LENGTH = 500;
+
+/** 评论附带作者简要信息 */
+function withCommentAuthor(c) {
+  const author = db.findById('users', c.userId);
+  return {
+    ...c,
+    author: author ? publicUser(author) : null,
+  };
+}
+
+/** 获取某篇日记的评论列表（按时间正序） */
+function getComments(diaryId) {
+  return db
+    .filter('comments', (c) => c.diaryId === diaryId)
+    .sort((a, b) => a.createdAt.localeCompare(b.createdAt))
+    .map(withCommentAuthor);
+}
+
+/** 评论列表（日记可见即可查看，无需登录） */
+router.get('/:id/comments', (req, res) => {
+  const diary = db.findById('diaries', req.params.id);
+  if (!diary) return res.status(404).json({ code: 1, message: '日记不存在' });
+  const user = getUserFromRequest(req);
+  if (!canView(diary, user)) {
+    return res.status(403).json({ code: 1, message: '该日记暂不可见' });
+  }
+  res.json({ code: 0, data: getComments(diary.id) });
+});
+
+/** 发表评论（登录用户；无需审核；禁言期间不可评论） */
+router.post('/:id/comments', authRequired, (req, res) => {
+  const diary = db.findById('diaries', req.params.id);
+  if (!diary) return res.status(404).json({ code: 1, message: '日记不存在' });
+  if (!canView(diary, req.user)) {
+    return res.status(403).json({ code: 1, message: '该日记暂不可见' });
+  }
+  // 禁言检查：禁言期间无法评论
+  if (getMuteState(req.user).muted) {
+    return res.status(403).json({ code: 1, message: muteMessage(req.user) });
+  }
+  const text = String((req.body || {}).content || '').trim();
+  if (!text) return res.status(400).json({ code: 1, message: '评论内容不能为空' });
+  if (text.length > MAX_COMMENT_LENGTH) {
+    return res.status(400).json({ code: 1, message: `评论最多 ${MAX_COMMENT_LENGTH} 字` });
+  }
+  const comment = db.insert('comments', {
+    diaryId: diary.id,
+    userId: req.user.id,
+    content: text,
+    createdAt: new Date().toISOString(),
+  });
+  res.json({ code: 0, data: withCommentAuthor(comment) });
 });
 
 module.exports = router;

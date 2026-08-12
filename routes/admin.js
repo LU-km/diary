@@ -5,7 +5,7 @@
  */
 const router = require('express').Router();
 const db = require('../lib/db');
-const { verifyPassword, publicUser, withAuthor } = require('../lib/utils');
+const { verifyPassword, publicUser, withAuthor, getMuteState } = require('../lib/utils');
 const { adminRequired, createSession } = require('../middleware/auth');
 const { rateLimit } = require('../middleware/security');
 const config = require('../config');
@@ -28,21 +28,23 @@ router.post('/login', rateLimit({ scope: 'admin-login', windowMs: config.RATE_LI
 /* ---------------- 数据统计（仪表盘） ---------------- */
 router.get('/stats', adminRequired, (req, res) => {
   const diaries = db.all('diaries');
+  const users = db.all('users');
   res.json({
     code: 0,
     data: {
-      users: db.all('users').length,
+      users: users.length,
       diaries: diaries.length,
       pending: diaries.filter((d) => d.status === 'pending').length,
       approved: diaries.filter((d) => d.status === 'approved' && d.visibility === 'public').length,
       private: diaries.filter((d) => d.visibility === 'private').length,
       rejected: diaries.filter((d) => d.status === 'rejected').length,
-      // v1.0.00：新增互动统计
+      // v1.0.00：互动统计；v1.1.0：评论统计
       likes: db.all('likes').length,
       favorites: db.all('favorites').length,
       forwards: db.all('forwards').length,
-      recentUsers: db
-        .all('users')
+      comments: db.all('comments').length,
+      muted: users.filter((u) => getMuteState(u).muted).length,
+      recentUsers: users
         .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
         .slice(0, 5)
         .map(publicUser),
@@ -56,18 +58,77 @@ router.get('/stats', adminRequired, (req, res) => {
 
 /* ---------------- 用户管理 ---------------- */
 
-/** 用户列表（仅普通用户，分页 + 关键词） */
+/** 用户列表（全部用户含管理员，分页 + 关键词；附带禁言状态） */
 router.get('/users', adminRequired, (req, res) => {
   const page = Math.max(1, parseInt(req.query.page, 10) || 1);
   const limit = Math.min(50, Math.max(1, parseInt(req.query.limit, 10) || 10));
   const keyword = String(req.query.keyword || '').trim();
 
-  let list = db.all('users').filter((u) => u.role === 'user');
+  let list = db.all('users');
   if (keyword) list = list.filter((u) => u.username.includes(keyword) || u.nickname.includes(keyword));
   list.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 
+  const view = (u) => {
+    const st = getMuteState(u);
+    return {
+      ...publicUser(u),
+      muted: st.muted,
+      mutedUntil: u.mutedUntil || '',
+      mutePermanent: st.permanent,
+    };
+  };
+
   const total = list.length;
-  res.json({ code: 0, data: { total, page, limit, list: list.slice((page - 1) * limit, page * limit).map(publicUser) } });
+  res.json({ code: 0, data: { total, page, limit, list: list.slice((page - 1) * limit, page * limit).map(view) } });
+});
+
+/**
+ * 变更用户角色（普通用户 ⇄ 管理员）
+ * 保护：不能操作当前登录账号；降级管理员时需保证至少保留一个管理员。
+ */
+router.put('/users/:id/role', adminRequired, (req, res) => {
+  const target = db.findById('users', req.params.id);
+  if (!target) return res.status(404).json({ code: 1, message: '用户不存在' });
+  if (target.id === req.user.id) return res.status(400).json({ code: 1, message: '不能变更当前登录账号的角色' });
+
+  const role = req.body && req.body.role === 'admin' ? 'admin' : 'user';
+
+  if (target.role === 'admin' && role === 'user') {
+    // 降级管理员：必须保证至少还剩一个管理员
+    const adminCount = db.all('users').filter((u) => u.role === 'admin').length;
+    if (adminCount <= 1) {
+      return res.status(400).json({ code: 1, message: '这是最后一个管理员，不能降级' });
+    }
+  }
+
+  const updated = db.update('users', target.id, { role });
+  res.json({ code: 0, data: publicUser(updated) });
+});
+
+/**
+ * 用户处罚（禁言）
+ * type: mute1d（禁言 1 天）| mute1w（禁言 1 周）| muteForever（永久禁言）| unmute（解除）
+ * 处罚期间无法发布日记与发表评论（可正常登录、浏览、点赞等）。
+ */
+router.put('/users/:id/punish', adminRequired, (req, res) => {
+  const target = db.findById('users', req.params.id);
+  if (!target) return res.status(404).json({ code: 1, message: '用户不存在' });
+  if (target.id === req.user.id) return res.status(400).json({ code: 1, message: '不能处罚当前登录账号' });
+  if (target.role === 'admin') return res.status(400).json({ code: 1, message: '不能处罚管理员账号' });
+
+  const type = String((req.body || {}).type || '');
+  let mutedUntil = null;
+  if (type === 'mute1d') mutedUntil = new Date(Date.now() + 24 * 3600 * 1000).toISOString();
+  else if (type === 'mute1w') mutedUntil = new Date(Date.now() + 7 * 24 * 3600 * 1000).toISOString();
+  else if (type === 'muteForever') mutedUntil = 'permanent';
+  else if (type !== 'unmute') return res.status(400).json({ code: 1, message: '处罚类型不合法' });
+
+  const updated = db.update('users', target.id, { mutedUntil });
+  const st = getMuteState(updated);
+  res.json({
+    code: 0,
+    data: { ...publicUser(updated), muted: st.muted, mutedUntil: updated.mutedUntil || '', mutePermanent: st.permanent },
+  });
 });
 
 /** 启用 / 禁用用户（被禁用用户的会话立即失效） */

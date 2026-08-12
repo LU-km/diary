@@ -9,7 +9,7 @@
  */
 const router = require('express').Router();
 const db = require('../lib/db');
-const { hashPassword, verifyPassword, publicUser, getClientIp } = require('../lib/utils');
+const { hashPassword, verifyPassword, publicUser, getClientIp, lookupIpGeo } = require('../lib/utils');
 const { authRequired, createSession } = require('../middleware/auth');
 const { rateLimit } = require('../middleware/security');
 const config = require('../config');
@@ -18,6 +18,13 @@ const config = require('../config');
 const USERNAME_RE = /^[a-zA-Z0-9_一-龥]{3,20}$/;
 // 普通用户密码规则：8-16 位，仅字母数字，且须同时包含字母和数字（管理员豁免）
 const PASSWORD_RE = /^[A-Za-z0-9]{8,16}$/;
+
+/** 异步补全 IP 地理信息（国家/省份），不阻塞登录响应；失败静默忽略 */
+function fillGeoAsync(userId, ip) {
+  lookupIpGeo(ip).then((geo) => {
+    if (geo && geo.country) db.update('users', userId, { geo });
+  }).catch(() => {});
+}
 
 /** 注册（限流：防批量注册，成功也计数） */
 router.post('/register', rateLimit({ scope: 'register', windowMs: config.RATE_LIMIT.WINDOW_MS, max: config.RATE_LIMIT.LOGIN_MAX, countSuccess: true }), (req, res) => {
@@ -57,6 +64,7 @@ router.post('/register', rateLimit({ scope: 'register', windowMs: config.RATE_LI
 
   // 注册即登录
   const token = createSession(user);
+  fillGeoAsync(user.id, getClientIp(req)); // 异步补全国家/省份
   res.json({ code: 0, data: { token, user: publicUser(user) } });
 });
 
@@ -73,16 +81,25 @@ router.post('/login', rateLimit({ scope: 'login', windowMs: config.RATE_LIMIT.WI
     return res.status(400).json({ code: 1, message: '该账号已被禁用，请联系管理员' });
   }
 
-  // 记录最近一次登录 IP
+  // 记录最近一次登录 IP，异步补全国家/省份
   db.update('users', user.id, { ip: getClientIp(req) });
+  fillGeoAsync(user.id, getClientIp(req));
 
   const token = createSession(user);
   res.json({ code: 0, data: { token, user: publicUser(user) } });
 });
 
-/** 当前登录用户（个人主页展示用，额外返回最近登录 IP） */
+/** 当前登录用户（个人主页展示用，额外返回最近登录 IP 及其国家/省份） */
 router.get('/me', authRequired, (req, res) => {
-  res.json({ code: 0, data: { ...publicUser(req.user), ip: req.user.ip || '未知' } });
+  const geo = req.user.geo || null;
+  res.json({
+    code: 0,
+    data: {
+      ...publicUser(req.user),
+      ip: req.user.ip || '未知',
+      geo: geo && geo.country ? { country: geo.country, region: geo.region || '' } : null,
+    },
+  });
 });
 
 /** 退出登录（删除服务端会话） */

@@ -37,9 +37,9 @@ function cardHtml(d) {
   return `
   <article class="card diary-card">
     <div class="card-head">
-      <img class="avatar sm" src="${d.author ? d.author.avatar : ''}" alt="作者头像">
+      <a href="/user.html?id=${d.author ? d.author.id : ''}"><img class="avatar sm" src="${d.author ? d.author.avatar : ''}" alt="作者头像"></a>
       <div class="card-author">
-        <span class="nickname">${d.author ? escapeHtml(d.author.nickname) : '未知用户'}</span>
+        <a class="nickname" href="/user.html?id=${d.author ? d.author.id : ''}">${d.author ? escapeHtml(d.author.nickname) : '未知用户'}</a>
         <span class="date">${fmtTime(d.createdAt)}</span>
       </div>
     </div>

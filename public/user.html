@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>用户主页 · 栖桉集</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <header class="nav-wrap"><nav class="container nav" id="nav"></nav></header>
+
+  <main class="container">
+    <!-- 他人资料卡（只读，不包含个人修改功能） -->
+    <div class="card profile-card user-profile-card" id="userCard">
+      <img id="avatarPreview" class="avatar-lg" alt="用户头像">
+      <h3 id="nicknameTitle">—</h3>
+      <p class="signature-line" id="signatureLine"></p>
+      <p class="meta-line" id="metaLine"></p>
+      <p class="meta-line" id="joinedLine"></p>
+    </div>
+
+    <!-- 该用户的公开日记 -->
+    <div class="section-head">
+      <h2 class="section-title">TA 的公开日记</h2>
+    </div>
+    <div id="feed" class="feed"><p class="empty">加载中…</p></div>
+  </main>
+
+  <footer class="footer">© 2026 栖桉集 · 愿你被世界温柔以待</footer>
+
+  <script src="/js/countries.js"></script>
+  <script src="/js/common.js"></script>
+  <script src="/js/user.js"></script>
+</body>
+</html>

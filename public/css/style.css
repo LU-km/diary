@@ -301,3 +301,25 @@ input:focus, textarea:focus, select:focus {
 .toast.show { opacity: 1; transform: translate(-50%, 0); }
 .toast.error { background: rgba(176, 90, 74, .95); }
 .toast.success { background: rgba(78, 135, 181, .95); }
+
+/* ---------------- v1.1.0：评论区 ---------------- */
+.comment-card { margin-top: 18px; }
+.comment-list { margin-bottom: 14px; }
+.comment-item { display: flex; gap: 10px; padding: 12px 0; border-bottom: 1px dashed var(--line, #e6e2da); }
+.comment-item:last-child { border-bottom: none; }
+.comment-item .avatar { flex-shrink: 0; }
+.comment-body { flex: 1; min-width: 0; }
+.comment-head { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
+.comment-head .nickname { font-size: 14px; font-weight: 600; }
+.comment-head .date { color: var(--ink-soft); font-size: 12px; }
+.comment-head .comment-del { margin-left: auto; }
+.comment-text { font-size: 14px; line-height: 1.7; word-break: break-word; white-space: pre-wrap; }
+.comment-form { display: flex; flex-direction: column; gap: 8px; }
+.comment-form textarea { width: 100%; border: 1px solid var(--line, #e6e2da); border-radius: 8px; padding: 10px; font-size: 14px; resize: vertical; font-family: inherit; }
+.comment-form .btn { align-self: flex-end; }
+
+/* ---------------- v1.1.0：他人主页 ---------------- */
+.user-profile-card { text-align: center; padding: 28px 20px; margin-bottom: 22px; }
+.user-profile-card .avatar-lg { margin-bottom: 10px; }
+.user-profile-card .signature-line { color: var(--ink-soft); font-size: 14px; margin: 8px 0; }
+.user-profile-card .meta-line { color: var(--ink-soft); font-size: 13px; margin: 3px 0; }

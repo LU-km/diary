@@ -1,5 +1,5 @@
 /**
- * users.js — 用户管理：列表 / 搜索 / 启用禁用 / 删除
+ * users.js — 用户管理：列表 / 搜索 / 启用禁用 / 删除 / 角色变更 / 处罚（禁言）
  */
 let page = 1;
 const LIMIT = 10;
@@ -21,13 +21,55 @@ async function load() {
   }
 }
 
+/** 禁言状态展示文案 */
+function muteBadgeHtml(u) {
+  if (!u.muted) return '';
+  if (u.mutePermanent) return '<span class="badge badge-danger">永久禁言</span>';
+  const until = new Date(u.mutedUntil);
+  const d = isNaN(until.getTime()) ? '' : fmtTime(u.mutedUntil).slice(0, 10);
+  return `<span class="badge badge-disabled">禁言至 ${d}</span>`;
+}
+
 function renderTable(data) {
   const tbody = document.getElementById('tbody');
   if (!data.list.length) {
-    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#8b857c;padding:26px">暂无数据</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#8b857c;padding:26px">暂无数据</td></tr>';
     return;
   }
-  tbody.innerHTML = data.list.map((u) => `
+  const me = adminGetUser();
+  tbody.innerHTML = data.list.map((u) => {
+    const isMe = me && u.id === me.id;
+    // 角色列
+    const roleHtml = u.role === 'admin'
+      ? '<span class="badge badge-admin">管理员</span>'
+      : '<span class="badge">普通用户</span>';
+    // 状态列：启用/禁用 + 禁言
+    const statusHtml = (u.status === 'active' ? '<span class="badge badge-approved">正常</span>' : '<span class="badge badge-disabled">已禁用</span>') + muteBadgeHtml(u);
+    // 操作列
+    const acts = [];
+    if (!isMe) {
+      // 角色变更（管理员降级时后端会保护最后一个管理员）
+      if (u.role === 'admin') acts.push(`<button class="btn gray small" onclick="changeRole('${u.id}','user')">降为普通用户</button>`);
+      else acts.push(`<button class="btn small" onclick="changeRole('${u.id}','admin')">设为管理员</button>`);
+      // 处罚（仅普通用户）
+      if (u.role !== 'admin') {
+        if (!u.muted) {
+          acts.push(`<button class="btn gray small" onclick="punish('${u.id}','mute1d')">禁言1天</button>`);
+          acts.push(`<button class="btn gray small" onclick="punish('${u.id}','mute1w')">禁言1周</button>`);
+          acts.push(`<button class="btn gray small" onclick="punish('${u.id}','muteForever')">永久禁言</button>`);
+        } else {
+          acts.push(`<button class="btn small" onclick="punish('${u.id}','unmute')">解除禁言</button>`);
+        }
+      }
+      // 启停 / 删除
+      acts.push(u.status === 'active'
+        ? `<button class="btn gray small" onclick="toggle('${u.id}', 'disabled')">禁用</button>`
+        : `<button class="btn small" onclick="toggle('${u.id}', 'active')">启用</button>`);
+      acts.push(`<button class="btn danger small" onclick="del('${u.id}')">删除</button>`);
+    } else {
+      acts.push('<span class="dim">（当前账号）</span>');
+    }
+    return `
     <tr>
       <td>
         <div class="cell-user">
@@ -40,16 +82,37 @@ function renderTable(data) {
       </td>
       <td>${escapeHtml(u.country || '—')}${u.city ? ' · ' + escapeHtml(u.city) : ''}</td>
       <td>${fmtTime(u.createdAt)}</td>
-      <td>${u.status === 'active' ? '<span class="badge badge-approved">正常</span>' : '<span class="badge badge-disabled">已禁用</span>'}</td>
-      <td>
-        <div class="actions">
-          ${u.status === 'active'
-            ? `<button class="btn gray small" onclick="toggle('${u.id}', 'disabled')">禁用</button>`
-            : `<button class="btn small" onclick="toggle('${u.id}', 'active')">启用</button>`}
-          <button class="btn danger small" onclick="del('${u.id}')">删除</button>
-        </div>
-      </td>
-    </tr>`).join('');
+      <td>${roleHtml}</td>
+      <td>${statusHtml}</td>
+      <td><div class="actions">${acts.join('')}</div></td>
+    </tr>`;
+  }).join('');
+}
+
+/** 变更角色（全局函数） */
+async function changeRole(id, role) {
+  const label = role === 'admin' ? '设为管理员' : '降为普通用户';
+  if (!confirm(`确定${label}吗？`)) return;
+  try {
+    await AdminAPI.request(`/api/admin/users/${id}/role`, { method: 'PUT', body: { role } });
+    toast('角色已更新', 'success');
+    load();
+  } catch (err) {
+    toast(err.message, 'error');
+  }
+}
+
+/** 处罚（全局函数） */
+async function punish(id, type) {
+  const labels = { mute1d: '禁言 1 天', mute1w: '禁言 1 周', muteForever: '永久禁言', unmute: '解除禁言' };
+  if (!confirm(`确定${labels[type]}该用户吗？处罚期间无法发布日记与评论。`)) return;
+  try {
+    await AdminAPI.request(`/api/admin/users/${id}/punish`, { method: 'PUT', body: { type } });
+    toast(labels[type] + '成功', 'success');
+    load();
+  } catch (err) {
+    toast(err.message, 'error');
+  }
 }
 
 /** 启用 / 禁用（全局函数，供 onclick 使用） */

@@ -92,12 +92,12 @@ function initMap() {
     document.getElementById('locInfo').textContent = '⚠ 地图组件加载失败，本次发布将不带地点。';
     return;
   }
-  // 默认以中国为中心
+  // 默认以中国为中心；瓦片采用高德地图（国内访问稳定；如需境外部署可换 OSM，见 README）
   map = L.map('mapBox').setView([35.86, 104.19], 4);
-  // 可商用的开源标准地图瓦片：OpenStreetMap（使用需保留署名）
-  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 19,
-    attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+  L.tileLayer('https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', {
+    maxZoom: 18,
+    subdomains: ['1', '2', '3', '4'],
+    attribution: '© 高德地图',
   }).addTo(map);
 
   // 编辑模式回填已有地点标记

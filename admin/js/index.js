@@ -8,7 +8,7 @@ renderTopbar('仪表盘');
 async function load() {
   const s = await AdminAPI.request('/api/admin/stats');
 
-  // 统计卡片（v1.0.00 新增互动统计）
+  // 统计卡片（v1.0.00 互动统计；v1.1.0 评论与禁言统计）
   document.getElementById('stats').innerHTML = [
     { label: '注册用户', num: s.users },
     { label: '日记总数', num: s.diaries },
@@ -19,6 +19,8 @@ async function load() {
     { label: '点赞', num: s.likes },
     { label: '收藏', num: s.favorites },
     { label: '转发', num: s.forwards },
+    { label: '评论', num: s.comments },
+    { label: '禁言中', num: s.muted, warn: s.muted > 0 },
   ].map((x) => `
     <div class="stat-card ${x.warn ? 'warn' : ''}">
       <div class="num">${x.num}</div>
@@ -39,5 +41,25 @@ async function load() {
       }).join('')
     : '<li>暂无</li>';
 }
+
+/** 修改密码（修改成功后所有会话失效，跳回登录页） */
+document.getElementById('passwordForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const oldPassword = document.getElementById('oldPassword').value;
+  const newPassword = document.getElementById('newPassword').value;
+  const confirmPassword = document.getElementById('confirmPassword').value;
+  if (newPassword !== confirmPassword) return toast('两次输入的新密码不一致', 'error');
+  try {
+    await AdminAPI.request('/api/user/password', { method: 'PUT', body: { oldPassword, newPassword, confirmPassword } });
+    toast('密码已修改，请重新登录', 'success');
+    setTimeout(() => {
+      localStorage.removeItem('admin_token');
+      localStorage.removeItem('admin_user');
+      location.href = '/admin/login.html';
+    }, 900);
+  } catch (err) {
+    toast(err.message, 'error');
+  }
+});
 
 load().catch((e) => toast(e.message, 'error'));

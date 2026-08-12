@@ -203,3 +203,7 @@ body.admin-body {
 .toast.show { opacity: 1; transform: translate(-50%, 0); }
 .toast.error { background: rgba(176, 90, 74, .95); }
 .toast.success { background: rgba(78, 135, 181, .95); }
+
+/* v1.1.0：角色与处罚 */
+.badge-admin { background: #e3d5f5; color: #7a4fb0; }
+.badge-danger { background: #f6dcdc; color: #b04a4a; }

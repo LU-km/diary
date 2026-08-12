@@ -14,6 +14,17 @@
 
   <main class="container narrow">
     <div id="diaryBox" class="card diary-detail"><p class="empty">加载中…</p></div>
+
+    <!-- 评论区 -->
+    <div class="card comment-card" id="commentCard" style="display:none">
+      <h3 class="sub-title" style="margin:0 0 12px">评论 <span id="commentCount" class="dim"></span></h3>
+      <div id="commentList" class="comment-list"><p class="empty">还没有评论</p></div>
+      <form id="commentForm" class="comment-form">
+        <textarea id="commentInput" maxlength="500" rows="2" placeholder="写下你的评论…（无需审核，即可显示）"></textarea>
+        <button class="btn btn-primary btn-sm" type="submit">发表评论</button>
+      </form>
+      <p class="hint" id="commentLoginHint" style="display:none">请 <a href="/login.html">登录</a> 后发表评论</p>
+    </div>
   </main>
 
   <footer class="footer">© 2026 栖桉集 · 愿你被世界温柔以待</footer>

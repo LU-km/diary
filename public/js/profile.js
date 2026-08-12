@@ -37,7 +37,14 @@ async function loadProfile() {
     document.getElementById('birthday').value = me.birthday || '';
     document.getElementById('birthday').max = new Date().toISOString().slice(0, 10);
     document.getElementById('zodiac').textContent = me.zodiac || '—';
-    document.getElementById('userIp').textContent = (me.ip === '127.0.0.1' || me.ip === '0.0.0.0') ? '本机访问（' + me.ip + '）' : (me.ip || '未知');
+    // 最近登录：显示 IP 对应的国家/省份（不展示 IP 本身）
+    let locText = '未知';
+    if (me.geo && me.geo.country) {
+      locText = me.geo.country + (me.geo.region && me.geo.region !== me.geo.country ? ' · ' + me.geo.region : '');
+    } else if (me.ip === '127.0.0.1' || me.ip === '0.0.0.0') {
+      locText = '本机访问';
+    }
+    document.getElementById('userIp').textContent = locText;
   } catch (err) {
     toast(err.message, 'error');
   }
@@ -116,7 +123,7 @@ function favCardHtml(d) {
   <article class="card mine-card">
     <div class="mine-head">
       <div class="mine-meta">
-        <span class="nickname">${d.author ? escapeHtml(d.author.nickname) : '未知用户'}</span>
+        <a class="nickname" href="/user.html?id=${d.author ? d.author.id : ''}">${d.author ? escapeHtml(d.author.nickname) : '未知用户'}</a>
         <span class="date">${fmtTime(d.createdAt)}</span>${locationBadge(d)}
       </div>
       <a class="btn btn-ghost btn-sm" href="/diary.html?id=${d.id}">查看</a>
