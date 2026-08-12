@@ -323,3 +323,66 @@ input:focus, textarea:focus, select:focus {
 .user-profile-card .avatar-lg { margin-bottom: 10px; }
 .user-profile-card .signature-line { color: var(--ink-soft); font-size: 14px; margin: 8px 0; }
 .user-profile-card .meta-line { color: var(--ink-soft); font-size: 13px; margin: 3px 0; }
+
+/* ---------------- v1.2.0：导航搜索框 / 消息红点 ---------------- */
+.nav-search { display: flex; align-items: center; gap: 4px; margin-left: 14px; flex: 1; max-width: 340px; }
+.nav-search input {
+  flex: 1; border: 1px solid var(--line, #e6e2da); border-radius: 16px; padding: 5px 14px;
+  font-size: 13px; background: #fafaf7; outline: none;
+}
+.nav-search button {
+  border: none; background: transparent; cursor: pointer; font-size: 15px; padding: 4px 6px;
+}
+.msg-link { position: relative; }
+.msg-dot {
+  position: absolute; top: -4px; right: -10px; min-width: 16px; height: 16px; line-height: 16px;
+  border-radius: 8px; background: #e05252; color: #fff; font-size: 10px; text-align: center;
+  padding: 0 4px;
+}
+
+/* ---------------- v1.2.0：搜索 Tab / 用户结果卡 ---------------- */
+.search-tabs { display: flex; gap: 8px; }
+.search-tabs .tab {
+  border: 1px solid var(--line, #e6e2da); background: #fff; border-radius: 16px; padding: 4px 16px;
+  font-size: 13px; cursor: pointer; color: var(--ink-soft, #8b857c);
+}
+.search-tabs .tab.active { background: var(--primary, #7d9d85); color: #fff; border-color: var(--primary, #7d9d85); }
+.user-result-card { display: flex; align-items: center; gap: 14px; padding: 16px 20px; }
+.user-result-body { flex: 1; min-width: 0; }
+.user-result-body .nickname { font-size: 16px; font-weight: 600; }
+.user-result-sig { color: var(--ink-soft, #8b857c); font-size: 13px; margin-top: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.user-result-stats { display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: var(--ink-soft, #8b857c); text-align: right; }
+.hot-badge { font-size: 12px; color: #d08d6a; margin-left: auto; }
+
+/* ---------------- v1.2.0：消息中心 ---------------- */
+.msg-list { display: flex; flex-direction: column; gap: 8px; }
+.msg-item {
+  display: flex; gap: 12px; align-items: flex-start; background: #fff; border: 1px solid var(--line, #e6e2da);
+  border-radius: 12px; padding: 12px 16px;
+}
+.msg-item.unread { background: #f0f6fb; border-color: #cfe0ee; }
+.msg-icon { font-size: 20px; }
+.msg-body { flex: 1; min-width: 0; }
+.msg-text { font-size: 14px; line-height: 1.6; }
+.msg-meta { display: flex; gap: 12px; align-items: center; margin-top: 4px; font-size: 12px; color: var(--ink-soft, #8b857c); }
+.msg-go { color: var(--primary, #3e6f96); text-decoration: underline; }
+
+/* ---------------- v1.2.0：私信对话 ---------------- */
+.dm-card { display: flex; flex-direction: column; height: 560px; }
+.dm-head { display: flex; align-items: center; gap: 12px; padding-bottom: 10px; border-bottom: 1px solid var(--line, #e6e2da); }
+.dm-title { font-size: 16px; font-weight: 600; }
+.dm-list { flex: 1; overflow-y: auto; padding: 14px 4px; display: flex; flex-direction: column; gap: 10px; }
+.dm-item { display: flex; flex-direction: column; max-width: 78%; }
+.dm-item.mine { align-self: flex-end; align-items: flex-end; }
+.dm-bubble {
+  background: #f1f3f0; border-radius: 12px 12px 12px 4px; padding: 8px 14px; font-size: 14px; line-height: 1.6;
+  word-break: break-word; white-space: pre-wrap;
+}
+.dm-item.mine .dm-bubble { background: #dcecf9; border-radius: 12px 12px 4px 12px; }
+.dm-time { font-size: 11px; color: var(--ink-soft, #8b857c); margin-top: 3px; }
+
+/* ---------------- v1.2.0：评论回复 ---------------- */
+.comment-item.reply { margin-left: 34px; padding-left: 12px; border-left: 2px solid var(--line, #e6e2da); }
+.reply-to { color: #3e6f96; font-size: 12px; }
+.reply-bar { display: flex; align-items: center; gap: 8px; }
+.reply-hint { font-size: 13px; color: #3e6f96; }

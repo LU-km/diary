@@ -95,6 +95,8 @@ async function del() {
 
 /* ---------------- 评论区 ---------------- */
 
+let replyTargetId = null; // 当前回复的目标评论 id（null = 直接评论）
+
 async function initComments() {
   const card = document.getElementById('commentCard');
   card.style.display = 'block';
@@ -103,6 +105,7 @@ async function initComments() {
   document.getElementById('commentForm').style.display = user ? '' : 'none';
   document.getElementById('commentLoginHint').style.display = user ? 'none' : '';
   document.getElementById('commentForm').addEventListener('submit', submitComment);
+  document.getElementById('cancelReplyBtn').addEventListener('click', cancelReply);
   await loadComments();
 }
 
@@ -115,6 +118,7 @@ async function loadComments() {
   }
 }
 
+/** 嵌套渲染：顶层评论 + 其下的回复（一层缩进） */
 function renderComments(list) {
   document.getElementById('commentCount').textContent = list.length ? `(${list.length})` : '';
   const box = document.getElementById('commentList');
@@ -124,18 +128,29 @@ function renderComments(list) {
   }
   const me = getUser();
   const canDelete = (c) => me && (me.role === 'admin' || c.userId === me.id || c.userId === diaryOwnerId);
-  box.innerHTML = list.map((c) => `
-    <div class="comment-item">
+  const top = list.filter((c) => !c.parentId);
+  const children = list.filter((c) => c.parentId);
+  const childMap = {};
+  children.forEach((c) => { (childMap[c.parentId] = childMap[c.parentId] || []).push(c); });
+
+  const commentItem = (c, isReply, parentAuthor) => `
+    <div class="comment-item ${isReply ? 'reply' : ''}">
       <a href="/user.html?id=${c.author ? c.author.id : ''}"><img class="avatar sm" src="${c.author ? c.author.avatar : ''}" alt="头像"></a>
       <div class="comment-body">
         <div class="comment-head">
           <a class="nickname" href="/user.html?id=${c.author ? c.author.id : ''}">${c.author ? escapeHtml(c.author.nickname) : '未知用户'}</a>
+          ${parentAuthor ? `<span class="reply-to">回复 @${escapeHtml(parentAuthor)}</span>` : ''}
           <span class="date">${fmtTime(c.createdAt)}</span>
+          ${me ? `<button class="btn btn-ghost btn-sm comment-reply" data-id="${c.id}" data-name="${c.author ? escapeHtml(c.author.nickname) : ''}">回复</button>` : ''}
           ${canDelete(c) ? `<button class="btn btn-ghost btn-sm comment-del" data-id="${c.id}">删除</button>` : ''}
         </div>
         <p class="comment-text">${escapeHtml(c.content)}</p>
       </div>
-    </div>`).join('');
+    </div>`;
+
+  box.innerHTML = top.map((c) => commentItem(c, false, null) + (childMap[c.id] || []).map((rc) => commentItem(rc, true, c.author ? c.author.nickname : '')).join('')).join('');
+
+  // 删除
   box.querySelectorAll('.comment-del').forEach((btn) => {
     btn.addEventListener('click', async () => {
       if (!confirm('确定删除这条评论吗？')) return;
@@ -148,6 +163,25 @@ function renderComments(list) {
       }
     });
   });
+  // 回复
+  box.querySelectorAll('.comment-reply').forEach((btn) => {
+    btn.addEventListener('click', () => setReplyTarget(btn.dataset.id, btn.dataset.name));
+  });
+}
+
+function setReplyTarget(commentId, name) {
+  replyTargetId = commentId;
+  document.getElementById('replyHint').textContent = '回复 @' + name + '：';
+  document.getElementById('replyHint').style.display = 'block';
+  document.getElementById('cancelReplyBtn').style.display = 'inline-block';
+  document.getElementById('commentInput').focus();
+}
+
+function cancelReply() {
+  replyTargetId = null;
+  document.getElementById('replyHint').style.display = 'none';
+  document.getElementById('cancelReplyBtn').style.display = 'none';
+  document.getElementById('commentInput').placeholder = '写下你的评论…（无需审核，即可显示）';
 }
 
 async function submitComment(e) {
@@ -157,8 +191,10 @@ async function submitComment(e) {
   const btn = document.querySelector('#commentForm button');
   btn.disabled = true;
   try {
-    await API.request('/api/diaries/' + id + '/comments', { method: 'POST', body: { content } });
+    const body = replyTargetId ? { content, parentId: replyTargetId } : { content };
+    await API.request('/api/diaries/' + id + '/comments', { method: 'POST', body });
     document.getElementById('commentInput').value = '';
+    cancelReply();
     toast('评论已发表', 'success');
     loadComments();
   } catch (err) {

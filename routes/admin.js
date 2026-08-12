@@ -196,4 +196,19 @@ router.delete('/diaries/:id', adminRequired, (req, res) => {
   res.json({ code: 0, message: '已删除' });
 });
 
+/* ---------------- 全站广播（v1.2.0） ---------------- */
+
+/** 广播通知：所有用户可在消息中心看到 */
+router.post('/broadcast', adminRequired, (req, res) => {
+  const content = String((req.body || {}).content || '').trim();
+  if (!content) return res.status(400).json({ code: 1, message: '广播内容不能为空' });
+  if (content.length > 500) return res.status(400).json({ code: 1, message: '广播最多 500 字' });
+  const { checkContent } = require('../lib/sensitive');
+  const bad = checkContent(content);
+  if (bad) return res.status(400).json({ code: 1, message: bad });
+  const { sendMessage } = require('../lib/notify');
+  const msg = sendMessage({ type: 'broadcast', fromUserId: req.user.id, toUserId: 'all', content });
+  res.json({ code: 0, data: msg });
+});
+
 module.exports = router;

@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
-  <!-- 顶部导航 -->
+  <!-- 顶部导航（含全局搜索框） -->
   <header class="nav-wrap"><nav class="container nav" id="nav"></nav></header>
 
   <!-- 首屏横幅 -->
@@ -20,11 +20,11 @@
 
   <!-- 日记广场 -->
   <main class="container">
-    <div class="toolbar">
-      <h2 class="section-title">日记广场</h2>
-      <div class="search-box">
-        <input id="keyword" type="text" placeholder="搜索日记关键词…" maxlength="50">
-        <button id="searchBtn" class="btn btn-primary btn-sm">搜索</button>
+    <div class="toolbar" id="toolbar">
+      <h2 class="section-title" id="feedTitle">日记广场</h2>
+      <div class="search-tabs" id="searchTabs" style="display:none">
+        <button class="tab active" data-type="diary">日记</button>
+        <button class="tab" data-type="user">用户</button>
       </div>
     </div>
     <div id="feed" class="feed"><p class="empty">加载中…</p></div>

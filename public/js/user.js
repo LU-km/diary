@@ -1,8 +1,10 @@
 /**
  * user.js — 他人主页
  * 展示对方的公开资料与公开日记（不含任何个人管理功能 / IP / 私密数据）。
+ * v1.2.0：新增「私信」「拉黑 / 解除」操作。
  */
 const uid = new URLSearchParams(location.search).get('id');
+let blockedByMe = false;
 
 async function init() {
   renderNav();
@@ -12,10 +14,48 @@ async function init() {
   }
   try {
     const data = await API.request('/api/users/' + uid);
+    blockedByMe = data.blockedByMe;
     renderUser(data.user);
+    renderActions(data);
     renderDiaries(data.diaries);
   } catch (err) {
     document.getElementById('userCard').innerHTML = `<p class="empty">${escapeHtml(err.message)}</p>`;
+  }
+}
+
+function renderActions(data) {
+  const me = getUser();
+  const box = document.getElementById('userActions');
+  if (!box || !me || me.id === uid) return; // 未登录或查看自己 → 不显示操作
+  let html = `<a class="btn btn-primary btn-sm" href="/messages.html?with=${uid}">✉️ 私信</a>`;
+  if (data.blockedMe) {
+    html += `<span class="dim" style="margin-left:8px">（对方已拉黑你，无法私信 / 评论其日记）</span>`;
+  } else {
+    html += blockedByMe
+      ? `<button class="btn btn-ghost btn-sm" id="blockBtn">解除拉黑</button>`
+      : `<button class="btn btn-ghost btn-sm" id="blockBtn">拉黑</button>`;
+  }
+  box.innerHTML = html;
+  const blockBtn = document.getElementById('blockBtn');
+  if (blockBtn) blockBtn.addEventListener('click', toggleBlock);
+}
+
+async function toggleBlock() {
+  try {
+    if (blockedByMe) {
+      await API.request('/api/users/' + uid + '/block', { method: 'DELETE' });
+      blockedByMe = false;
+      toast('已解除拉黑', 'success');
+    } else {
+      if (!confirm('确定拉黑该用户吗？拉黑后对方将无法给你发私信、无法评论你的日记。')) return;
+      await API.request('/api/users/' + uid + '/block', { method: 'POST' });
+      blockedByMe = true;
+      toast('已拉黑', 'success');
+    }
+    const btn = document.getElementById('blockBtn');
+    if (btn) btn.textContent = blockedByMe ? '解除拉黑' : '拉黑';
+  } catch (err) {
+    toast(err.message, 'error');
   }
 }
 

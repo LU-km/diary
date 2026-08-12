@@ -214,6 +214,29 @@ function toast(msg, type = 'info') {
 }
 
 /* ---------------- 导航渲染 ---------------- */
+let msgPollStarted = false;
+
+/** 更新消息未读红点 */
+async function refreshMsgDot() {
+  const dot = document.getElementById('msgDot');
+  if (!dot) return;
+  if (!getToken()) { dot.style.display = 'none'; return; }
+  try {
+    const d = await API.request('/api/messages/unread');
+    const n = (d && d.count) || 0;
+    dot.textContent = n > 99 ? '99+' : String(n);
+    dot.style.display = n > 0 ? 'inline-block' : 'none';
+  } catch { /* 忽略 */ }
+}
+
+/** 启动消息未读轮询（每个页面仅一次） */
+function startMsgPoll() {
+  if (msgPollStarted) return;
+  msgPollStarted = true;
+  refreshMsgDot();
+  setInterval(refreshMsgDot, 60000);
+}
+
 function renderNav(active = '') {
   const user = getUser();
   const nav = document.getElementById('nav');
@@ -221,6 +244,7 @@ function renderNav(active = '') {
 
   const links = user
     ? `<a href="/write.html" class="${active === 'write' ? 'active' : ''}">写日记</a>` +
+      `<a href="/messages.html" class="msg-link ${active === 'messages' ? 'active' : ''}">消息<span class="msg-dot" id="msgDot" style="display:none"></span></a>` +
       `<a href="/profile.html" class="${active === 'profile' ? 'active' : ''}">我的</a>` +
       `<a href="javascript:void(0)" id="navLogout">退出</a>` +
       `<span class="nav-user">${escapeHtml(user.nickname)}</span>`
@@ -229,10 +253,29 @@ function renderNav(active = '') {
 
   nav.innerHTML =
     `<a class="nav-logo" href="/"><span class="logo-leaf">✿</span> ${SITE_NAME}</a>` +
+    `<div class="nav-search">
+       <input id="navKeyword" type="text" maxlength="50" placeholder="搜索日记 / 用户…">
+       <button id="navSearchBtn" title="搜索">🔍</button>
+     </div>` +
     `<div class="nav-links">${links}</div>`;
 
   const logoutBtn = document.getElementById('navLogout');
   if (logoutBtn) logoutBtn.addEventListener('click', () => {
     if (confirm('确定退出登录吗？')) logout();
   });
+
+  // 全局搜索：回车 / 点按钮 → 跳首页并携带关键词
+  const doSearch = () => {
+    const kw = document.getElementById('navKeyword').value.trim();
+    location.href = '/?keyword=' + encodeURIComponent(kw);
+  };
+  document.getElementById('navSearchBtn').addEventListener('click', doSearch);
+  document.getElementById('navKeyword').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') doSearch();
+  });
+  // 从 URL 回填搜索框
+  const kw = new URLSearchParams(location.search).get('keyword');
+  if (kw) document.getElementById('navKeyword').value = kw;
+
+  startMsgPoll();
 }

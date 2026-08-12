@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>消息中心 · 栖桉集</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <header class="nav-wrap"><nav class="container nav" id="nav"></nav></header>
+
+  <main class="container narrow">
+    <!-- 私信对话视图 -->
+    <div class="card dm-card" id="dmView" style="display:none">
+      <div class="dm-head">
+        <a class="btn btn-ghost btn-sm" href="/messages.html">← 返回</a>
+        <span id="dmWithName" class="dm-title"></span>
+      </div>
+      <div id="dmList" class="dm-list"><p class="empty">加载中…</p></div>
+      <form id="dmForm" class="comment-form">
+        <textarea id="dmInput" maxlength="1000" rows="2" placeholder="输入私信内容…（Enter 发送请用 Ctrl+Enter）"></textarea>
+        <button class="btn btn-primary btn-sm" type="submit">发送</button>
+      </form>
+    </div>
+
+    <!-- 消息列表视图 -->
+    <div id="msgView">
+      <div class="section-head">
+        <h2 class="section-title">消息中心</h2>
+        <button class="btn btn-ghost btn-sm" id="readAllBtn">全部已读</button>
+      </div>
+      <div id="msgList" class="msg-list"><p class="empty">加载中…</p></div>
+    </div>
+  </main>
+
+  <footer class="footer">© 2026 栖桉集 · 愿你被世界温柔以待</footer>
+
+  <script src="/js/common.js"></script>
+  <script src="/js/messages.js"></script>
+</body>
+</html>

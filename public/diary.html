@@ -20,6 +20,10 @@
       <h3 class="sub-title" style="margin:0 0 12px">评论 <span id="commentCount" class="dim"></span></h3>
       <div id="commentList" class="comment-list"><p class="empty">还没有评论</p></div>
       <form id="commentForm" class="comment-form">
+        <div class="reply-bar" id="replyBar" style="display:none">
+          <span class="reply-hint" id="replyHint"></span>
+          <button type="button" class="btn btn-ghost btn-sm" id="cancelReplyBtn" style="display:none">取消回复</button>
+        </div>
         <textarea id="commentInput" maxlength="500" rows="2" placeholder="写下你的评论…（无需审核，即可显示）"></textarea>
         <button class="btn btn-primary btn-sm" type="submit">发表评论</button>
       </form>

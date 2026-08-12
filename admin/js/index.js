@@ -62,4 +62,18 @@ document.getElementById('passwordForm').addEventListener('submit', async (e) => 
   }
 });
 
+/** 全站广播（v1.2.0） */
+document.getElementById('broadcastForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const content = document.getElementById('broadcastContent').value.trim();
+  if (!content) return toast('请输入广播内容', 'error');
+  try {
+    await AdminAPI.request('/api/admin/broadcast', { method: 'POST', body: { content } });
+    document.getElementById('broadcastContent').value = '';
+    toast('广播已发送', 'success');
+  } catch (err) {
+    toast(err.message, 'error');
+  }
+});
+
 load().catch((e) => toast(e.message, 'error'));

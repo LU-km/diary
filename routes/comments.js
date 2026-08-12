@@ -22,6 +22,8 @@ router.delete('/:id', authRequired, (req, res) => {
   }
 
   db.remove('comments', comment.id);
+  // 级联删除该评论下的所有回复（parentId 指向它）
+  db.filter('comments', (c) => c.parentId === comment.id).forEach((c) => db.remove('comments', c.id));
   res.json({ code: 0, message: '评论已删除' });
 });
 

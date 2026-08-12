@@ -53,9 +53,10 @@ app.use('/uploads', express.static(config.UPLOAD_DIR, { maxAge: '7d' })); // 上
 /* ------------------------------------------------------------------ */
 app.use('/api/auth', require('./routes/auth')); // 登录 / 注册
 app.use('/api/user', require('./routes/user')); // 个人资料
-app.use('/api/users', require('./routes/public')); // 公开用户主页（v1.1.0）
+app.use('/api/users', require('./routes/public')); // 公开用户主页 / 搜索 / 拉黑
 app.use('/api/diaries', require('./routes/diary')); // 日记 + 互动 + 评论
-app.use('/api/comments', require('./routes/comments')); // 评论删除（v1.1.0）
+app.use('/api/comments', require('./routes/comments')); // 评论删除
+app.use('/api/messages', require('./routes/messages')); // 站内消息 / 私信（v1.2.0）
 app.use('/api/upload', require('./routes/upload')); // 图片上传
 app.use('/api/admin', require('./routes/admin')); // 管理后台 API
 
