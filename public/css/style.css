@@ -400,3 +400,10 @@ input:focus, textarea:focus, select:focus {
 .dm-item.mine { flex-direction: row-reverse; }
 .dm-item.mine .dm-body { align-items: flex-end; }
 .dm-item .avatar.right { margin-left: auto; }
+
+/* v1.3.2：单条消息已读 */
+.msg-read-btn {
+  border: 1px solid var(--line, #e6e2da); background: #fff; border-radius: 10px;
+  font-size: 12px; color: var(--ink-soft, #8b857c); cursor: pointer; padding: 1px 10px;
+}
+.msg-read-btn:hover { color: var(--primary, #3e6f96); border-color: var(--primary, #3e6f96); }

@@ -167,10 +167,27 @@ async function initList() {
         <span class="msg-icon">${meta.icon}</span>
         <div class="msg-body">
           <div class="msg-text">${msgText(m)}</div>
-          <div class="msg-meta"><span>${friendlyTime(m.createdAt)}</span>${diaryLink}${dmLink}</div>
+          <div class="msg-meta"><span>${friendlyTime(m.createdAt)}</span>${diaryLink}${dmLink}
+            ${m.read ? '' : `<button class="msg-read-btn" data-id="${m.id}">标为已读</button>`}
+          </div>
         </div>
       </div>`;
     }).join('');
+    // 单条已读（v1.3.2）
+    box.querySelectorAll('.msg-read-btn').forEach((btn) => {
+      btn.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        try {
+          await API.request('/api/messages/' + btn.dataset.id + '/read', { method: 'POST' });
+          const item = btn.closest('.msg-item');
+          if (item) item.classList.remove('unread');
+          btn.remove();
+          refreshMsgDot();
+        } catch (err) {
+          toast(err.message, 'error');
+        }
+      });
+    });
     refreshMsgDot();
   } catch (err) {
     toast(err.message, 'error');

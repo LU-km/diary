@@ -130,8 +130,19 @@ function renderComments(list) {
   const canDelete = (c) => me && (me.role === 'admin' || c.userId === me.id || c.userId === diaryOwnerId);
   const top = list.filter((c) => !c.parentId);
   const children = list.filter((c) => c.parentId);
+  // 把每一层回复都归一到它的「根评论」下（多级回复扁平化为两级展示，链式标识"回复 @xxx"）
+  const byId = {};
+  list.forEach((c) => { byId[c.id] = c; });
   const childMap = {};
-  children.forEach((c) => { (childMap[c.parentId] = childMap[c.parentId] || []).push(c); });
+  children.forEach((c) => {
+    let root = c;
+    const seen = new Set();
+    while (root.parentId && byId[root.parentId] && !seen.has(root.parentId)) {
+      seen.add(root.parentId);
+      root = byId[root.parentId];
+    }
+    (childMap[root.id] = childMap[root.id] || []).push(c);
+  });
 
   const commentItem = (c, isReply, parentAuthor) => `
     <div class="comment-item ${isReply ? 'reply' : ''}">
@@ -148,7 +159,11 @@ function renderComments(list) {
       </div>
     </div>`;
 
-  box.innerHTML = top.map((c) => commentItem(c, false, null) + (childMap[c.id] || []).map((rc) => commentItem(rc, true, c.author ? c.author.nickname : '')).join('')).join('');
+  box.innerHTML = top.map((c) => commentItem(c, false, null) + (childMap[c.id] || []).map((rc) => {
+    const directParent = byId[rc.parentId];
+    const pName = directParent && directParent.author ? directParent.author.nickname : '';
+    return commentItem(rc, true, pName);
+  }).join('')).join('');
 
   // 删除
   box.querySelectorAll('.comment-del').forEach((btn) => {

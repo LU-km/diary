@@ -22,8 +22,15 @@ router.delete('/:id', authRequired, (req, res) => {
   }
 
   db.remove('comments', comment.id);
-  // 级联删除该评论下的所有回复（parentId 指向它）
-  db.filter('comments', (c) => c.parentId === comment.id).forEach((c) => db.remove('comments', c.id));
+  // 级联删除该评论下的所有后代回复（递归，含"回复的回复"，v1.3.2 修复）
+  const collectDescendants = (rootId) => {
+    const kids = db.filter('comments', (c) => c.parentId === rootId);
+    kids.forEach((k) => {
+      collectDescendants(k.id);
+      db.remove('comments', k.id);
+    });
+  };
+  collectDescendants(comment.id);
   res.json({ code: 0, message: '评论已删除' });
 });
 

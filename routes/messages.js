@@ -47,6 +47,17 @@ router.post('/read-all', authRequired, (req, res) => {
   res.json({ code: 0, message: '已全部标为已读' });
 });
 
+/** 单条消息标为已读（v1.3.2：支持逐条阅读） */
+router.post('/:id/read', authRequired, (req, res) => {
+  const msg = db.findById('messages', req.params.id);
+  if (!msg) return res.status(404).json({ code: 1, message: '消息不存在' });
+  if (msg.toUserId !== req.user.id && msg.toUserId !== 'all') {
+    return res.status(403).json({ code: 1, message: '无权操作该消息' });
+  }
+  if (!msg.read) db.update('messages', msg.id, { read: true });
+  res.json({ code: 0, message: '已标为已读' });
+});
+
 /** 与某用户的私信往来（threadId 过滤，按时间正序） */
 router.get('/with/:userId', authRequired, (req, res) => {
   const other = db.findById('users', req.params.userId);
